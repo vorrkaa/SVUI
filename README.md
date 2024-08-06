@@ -1,6 +1,7 @@
 # SuperVillain UI
 
-Custom World of Warcraft User Interface. This version is a fork and upgrade from legacy and unmaintained repository.
+Custom World of Warcraft User Interface. \
+This version is a fork and upgrade from legacy and unmaintained repository to be playable for **The War Within only**.
 
 ## Original UI
 SVUI original repository: https://github.com/FailcoderAddons/SVUI \
@@ -13,7 +14,7 @@ SuperVillain UI is designed to work with the latest live expansion of World of W
 ### Notes
 
 * This repo will be used exclusively for development versions
-* All feature requests will be considered but not guranteed
+* All feature requests will be considered but not guaranteed
 * Please be thorough when posting issues
 
 ## Release Version
