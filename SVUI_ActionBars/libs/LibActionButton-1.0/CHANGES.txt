@@ -1,0 +1,24 @@
+tag 42132a1b43d2043a032389c4482ca5d69446fb5e 0.48
+Author:	Hendrik Leppkes <h.leppkes@gmail.com>
+Date:	Tue Feb 6 18:53:05 2024 +0100
+
+Tag as 0.48
+
+commit 4314a5539ebfdce8d893a04b40be225163baba4d
+Author: Hendrik Leppkes <h.leppkes@gmail.com>
+Date:   Tue Feb 6 18:52:38 2024 +0100
+
+    Fix API Check for Classic 1.15.1
+
+commit a2f98404ac9b72bc26f1537b579386c81b832042
+Author: Hendrik Leppkes <h.leppkes@gmail.com>
+Date:   Tue Feb 6 18:52:26 2024 +0100
+
+    Update TOC for 10.2.5
+
+commit ed7692b23e6f0b51982351c0e6eb9b3bbf15a839
+Author: Hendrik Leppkes <h.leppkes@gmail.com>
+Date:   Fri Nov 17 09:49:56 2023 +0100
+
+    Disable IsItemInRange, as its protected now
+

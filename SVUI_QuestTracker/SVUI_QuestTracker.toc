@@ -1,0 +1,13 @@
+## Interface: 110002
+## Author: Vorka
+## Version: 2.1.0
+## Title: |cffFF9900SuperVillain UI: |r|cffFFEF00QuestTracker|r
+## Notes: QuestTracker Plugin for [|cff9911FFSVUI|r].
+## OptionalDeps: LibSharedMedia-3.0
+## RequiredDeps: SVUI_!Core
+## X-SVUIName: QuestTracker
+## X-SVUISchema: QuestTracker
+## X-License: MIT
+## X-Category: Interface Enhancements
+
+SVUI_QuestTracker.xml

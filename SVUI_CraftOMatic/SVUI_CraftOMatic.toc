@@ -1,0 +1,13 @@
+## Interface: 110002
+## Author: Vorka
+## Version: 2.1.0
+## Title: |cffFF9900SVUI Plugin: |r|cffFF69B4Craft-O-Matic|r
+## Notes: Supervillain UI [|cff9911FFProfession Tools|r].
+## RequiredDeps: SVUI_!Core
+## OptionalDeps: LibSharedMedia-3.0
+## X-SVUIName: Craft-O-Matic
+## X-SVUISchema: CraftOMatic
+## X-License: MIT
+## X-Category: Interface Enhancements
+
+SVUI_CraftOMatic.xml

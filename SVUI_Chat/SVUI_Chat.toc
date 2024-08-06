@@ -1,0 +1,15 @@
+## Interface: 110002
+## Author: Vorka
+## Version: 2.1.0
+## Title: |cffFF9900SuperVillain UI: |r|cffFFEF00Chat|r
+## Notes: Chat Plugin for [|cff9911FFSVUI|r].
+## SavedVariables: SVUI_Global_ChatCache
+## SavedVariablesPerCharacter: SVUI_Private_ChatCache
+## RequiredDeps: SVUI_!Core
+## OptionalDeps: LibSharedMedia-3.0
+## X-SVUIName: Chat
+## X-SVUISchema: Chat
+## X-License: MIT
+## X-Category: Interface Enhancements
+
+SVUI_Chat.xml

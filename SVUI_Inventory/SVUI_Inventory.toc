@@ -1,0 +1,15 @@
+## Interface: 110002
+## Author: Vorka
+## Version: 2.1.0
+## Title: |cffFF9900SuperVillain UI: |r|cffFFEF00Inventory|r
+## Notes: Inventory Plugin for [|cff9911FFSVUI|r].
+## SavedVariables: SVUI_LootCache
+## SavedVariablesPerCharacter: SVUI_Private_LootCache
+## RequiredDeps: SVUI_!Core
+## OptionalDeps: LibSharedMedia-3.0
+## X-SVUIName: Inventory
+## X-SVUISchema: Inventory
+## X-License: MIT
+## X-Category: Interface Enhancements
+
+SVUI_Inventory.xml

@@ -1,0 +1,13 @@
+## Interface: 110002
+## Author: Vorka
+## Version: 2.1.0
+## Title: |cffFF9900SuperVillain UI: |r|cffFFEF00Action Bars|r
+## Notes: Action Bar Plugin for [|cff9911FFSVUI|r].
+## OptionalDeps: LibSharedMedia-3.0, LibActionButton-1.0
+## RequiredDeps: SVUI_!Core
+## X-SVUIName: ActionBars
+## X-SVUISchema: ActionBars
+## X-Embeds: LibActionButton-1.0
+## X-License: MIT
+
+SVUI_ActionBars.xml
