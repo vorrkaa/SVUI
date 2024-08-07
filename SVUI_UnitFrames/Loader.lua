@@ -26,7 +26,12 @@ local unitframeColors = {
 		["FOCUS"]        = {1, 0.63, 0.27},
 		["ENERGY"]       = {0.85, 0.83, 0.25},
 		["RUNES"]        = {0.55, 0.57, 0.61},
-		["RUNIC_POWER"]  = {0, 0.82, 1}
+		["RUNIC_POWER"]  = {0, 0.82, 1},
+		["STAGGER"] = {
+			["green"] = { 0, 0.55, 0.5 },
+			["yellow"] = { 0.85, 0.83, 0.25 },
+			["red"] = { 1, 0.31, 0.31 },
+		}
 	},
 	["reaction"]     = {
 		[1] = {0.92, 0.15, 0.15},
@@ -55,7 +60,16 @@ local unitframeColors = {
 
 for power, color in next, PowerBarColor do
 	if(type(power) == 'string' and (not unitframeColors.power[power])) then
-		unitframeColors.power[power] = {color.r, color.g, color.b}
+		if power == "STAGGER" then
+			unitframeColors.power[power] = {
+				["green"] = { color.green.r, color.green.g, color.green.b },
+				["yellow"] = { color.yellow.r, color.yellow.g, color.yellow.b },
+				["red"] = { color.red.r, color.red.g, color.red.b },
+			}
+		else
+			unitframeColors.power[power] = {color.r, color.g, color.b}
+		end
+
 	end
 end
 
