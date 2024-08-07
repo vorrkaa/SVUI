@@ -892,6 +892,15 @@ local function InitializeMisc()
 	hooksecurefunc(GameMenuFrame, "InitButtons", function(self)
 		self:AddSection();
 		self:AddButton("|cffFF9900SuperVillain UI|r", GenerateMenuCallback(ShowSV))
+
+		if not self.buttonPool then return end
+
+		for button in self.buttonPool:EnumerateActive() do
+			if not button.skinned then
+				button:RemoveTextures(true)
+				button:SetStyle("Button", 1, 1, "black")
+			end
+		end
 	end)
 
 	-- local cfg = CreateFrame("Button", "GameMenuButtonSVUI", GameMenuFrame, "GameMenuButtonTemplate")

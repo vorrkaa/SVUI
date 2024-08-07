@@ -669,18 +669,25 @@ local function SystemPanelQue()
 
 	end
 
-	for i = 1, #SystemFrameList5 do
-		local this = _G[SystemFrameList5[i].."Header"]
-		if(this) then
-			this:SetTexture("")
-			this:ClearAllPoints()
-			if this == _G["GameMenuFrameHeader"] then
-				this:SetPoint("TOP", GameMenuFrame, 0, 7)
-			else
-				this:SetPoint("TOP", SystemFrameList5[i], 0, 0)
-			end
-		end
-	end
+	GameMenuFrame.Header:RemoveTextures()
+	GameMenuFrame.Header.Text:SetFontObject(SVUI_Font_Header)
+	GameMenuFrame.Header:ClearAllPoints()
+	GameMenuFrame.Header:SetPoint("TOP", GameMenuFrame, 0, 7)
+
+	GameMenuFrame.Border:RemoveTextures()
+
+	--for i = 1, #SystemFrameList5 do
+	--	local this = _G[SystemFrameList5[i].."Header"]
+	--	if(this) then
+	--		this:SetTexture("")
+	--		this:ClearAllPoints()
+	--		if this == _G["GameMenuFrameHeader"] then
+	--			this:SetPoint("TOP", GameMenuFrame, 0, 7)
+	--		else
+	--			this:SetPoint("TOP", SystemFrameList5[i], 0, 0)
+	--		end
+	--	end
+	--end
 	for i = 1, #SystemFrameList6 do
 		local this = _G[SystemFrameList6[i]]
 		if(this) then

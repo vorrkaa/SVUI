@@ -34,8 +34,8 @@ local twipe, tsort = table.wipe, table.sort;
 
 local NUM_BAG_SLOTS             = _G.NUM_BAG_SLOTS;
 local CURRENCY          		= _G.CURRENCY;
-local GetContainerNumFreeSlots  = _G.GetContainerNumFreeSlots;
-local GetContainerNumSlots      = _G.GetContainerNumSlots;
+local GetContainerNumFreeSlots  = C_Container.GetContainerNumFreeSlots
+local GetContainerNumSlots      = C_Container.GetContainerNumSlots
 local ToggleAllBags     		= _G.ToggleAllBags;
 local MAX_WATCHED_TOKENS        = _G.MAX_WATCHED_TOKENS;
 local GetBackpackCurrencyInfo  = _G.GetBackpackCurrencyInfo;

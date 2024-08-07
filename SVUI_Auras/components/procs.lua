@@ -191,7 +191,7 @@ function MOD:UpdateProcWatch()
 		if(procData.enable) then
 			local spellID = tonumber(procID);
 			-- local spellName,_,spellTexture = GetSpellInfo(spellID)
-			local spellInfo = GetSpellInfo(spellID)
+			local spellInfo = C_Spell.GetSpellInfo(spellID)
 			local spellName = spellInfo.name
 			local spellTexture = spellInfo.iconID
 			if spellName then
