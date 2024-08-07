@@ -103,7 +103,7 @@ end
 
 function CPU:ADDON_LOADED(addon)
 
-    if GetCVar("scriptProfile") == 0 then return end
+    if GetCVarBool("scriptProfile") == false then return end
 
     if addon == CoreName then
         self.loadedTime = GetTime()
@@ -269,9 +269,15 @@ function CPU:Filter(mod)
     end)
 end
 
-local function initCPUUsage(arg)
+local function HandleOptions(arg)
 
-    if arg == "on" and not timerHandler then
+    if arg == "enable" and GetCVarBool("scriptProfile") == false then
+        SetCVar("scriptProfile", true)
+        ReloadUI()
+    elseif arg == "disable" and GetCVarBool("scriptProfile") == true then
+        SetCVar("scriptProfile", false)
+        ReloadUI()
+    elseif arg == "on" and not timerHandler then
 
         if GetCVarBool("scriptProfile") == false then
             SetCVar("scriptProfile", true)
@@ -283,18 +289,14 @@ local function initCPUUsage(arg)
                 CPU:UpdateFunctions(addon)
             end
         end)
-
     elseif arg == "off" and timerHandler and not timerHandler:IsCancelled() then
         timerHandler:Cancel()
         timerHandler = nil
-
-        SetCVar("scriptProfile", false)
-
     elseif arg == "print" then
         CPU:Filter()
         CPU:PrintCPUUsage()
     end
 end
 
-_G.SlashCmdList["SVUI_CPU_USAGE"] = initCPUUsage
+_G.SlashCmdList["SVUI_CPU_USAGE"] = HandleOptions
 _G.SLASH_SVUI_CPU_USAGE1 = "/svcpu"
