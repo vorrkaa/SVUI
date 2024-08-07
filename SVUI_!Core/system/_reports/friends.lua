@@ -153,13 +153,24 @@ do
 			wipe(FRIEND_DATA[BATTLENET_OPTIONS_LABEL])
 
 			for i = 1, COUNT_BNET do
-				local presenceID, presenceName, battleTag, isBattleTagPresence, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, messageTime, canSoR = C_BattleNet.GetFriendAccountInfo(i)
-		        local _, hasFocus, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText, broadcastTime;
-		        if(toonID) then
-		          	hasFocus, toonName, client, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText, broadcastTime = BNGetGameAccountInfo(toonID);
-		        else
-		          	hasFocus, toonName, client, realmName, realmID, faction, race, class, guild, zoneName, level, gameText, broadcastText, broadcastTime = BNGetGameAccountInfo(presenceID);
-		        end
+				local friendAccountInfo = C_BattleNet.GetFriendAccountInfo(i)
+				local gameAccountInfo = friendAccountInfo.gameAccountInfo
+
+				local client = gameAccountInfo.clientProgram
+				local isOnline = gameAccountInfo.isOnline
+				local class = gameAccountInfo.className
+				local isAFK = gameAccountInfo.isGameAFK
+				local isDND = gameAccountInfo.isGameBusy
+				local toonName = gameAccountInfo.characterName
+				local zoneName = gameAccountInfo.areaName
+				local level = gameAccountInfo.characterLevel
+				local realmName = gameAccountInfo.realmDisplayName
+				local faction = gameAccountInfo.factionName
+				local race = gameAccountInfo.raceName
+				local presenceID = friendAccountInfo.bnetAccountID
+				local presenceName = friendAccountInfo.battleTag
+				local toonID = gameAccountInfo.playerGuid
+				local noteText = friendAccountInfo.note
 
 		        if(not client or (client == BNET_CLIENT_APP)) then
 		        	client = BATTLENET_OPTIONS_LABEL
