@@ -2,7 +2,7 @@
     <Include file="libs\_load.xml"/>
     <Include file="language\_load.xml"/>
     <Include file="xml\fonts.xml"/>
-    
+
     <!-- added for backdrop definition -->
     <Script file="system\backdrop.lua"/>
     <Include file="xml\templates.xml"/>
@@ -22,6 +22,7 @@
     <Script file="system\overrides.lua"/>
     <Script file="system\errors.lua"/>
     <Script file="system\debug.lua"/>
+    <Script file="system\cpu_usage.lua"/>
     <Script file="system\profile.lua"/>
 
     <Include file="setup\_load.xml"/>

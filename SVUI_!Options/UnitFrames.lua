@@ -2425,19 +2425,40 @@ local function GetPowerColorOptions()
 	local args = {};
 	local count = 1;
 	for power, color in next, SV.media.extended.unitframes.power do
-		args[power] = {
-			order = count,
-			name = power,
-			type = "color",
-			get = function(key)
-				local color = SV.media.extended.unitframes.power[power]
-				return color[1],color[2],color[3]
-			end,
-			set = function(key, rValue, gValue, bValue)
-				SV.media.extended.unitframes.power[power] = {rValue, gValue, bValue}
-				MOD:RefreshAllUnitMedia()
-			end,
-		};
+		if power == "STAGGER" then
+			local indices = { "green", "yellow", "red" }
+			for i=1, 3 do
+				args[power.."_"..indices[i]] = {
+					order = count,
+					name = power.."_"..indices[i],
+					type = "color",
+					get = function(key)
+						local color = SV.media.extended.unitframes.power[power][indices[i]]
+						return color[1],color[2],color[3]
+					end,
+					set = function(key, rValue, gValue, bValue)
+						SV.media.extended.unitframes.power[power][indices[i]] = {rValue, gValue, bValue}
+						MOD:RefreshAllUnitMedia()
+					end,
+				};
+			end
+
+		else
+			args[power] = {
+				order = count,
+				name = power,
+				type = "color",
+				get = function(key)
+					local color = SV.media.extended.unitframes.power[power]
+					return color[1],color[2],color[3]
+				end,
+				set = function(key, rValue, gValue, bValue)
+					SV.media.extended.unitframes.power[power] = {rValue, gValue, bValue}
+					MOD:RefreshAllUnitMedia()
+				end,
+			};
+		end
+
 		count = count + 1;
 	end
 	return args;

@@ -1269,7 +1269,6 @@ SV.Options.args.Screen = {
 					set = function(j,value)
 						SV.db.screen.autoScale = value;
 						if(value) then
-							DevTool:AddData(value, "SV.Options.args.Screen")
 							-- SV.db.screen.scaleAdjust = 0.64;
 							SV.db.screen.scaleAdjust = 0.35;
 						end

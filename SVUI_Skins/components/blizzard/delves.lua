@@ -45,6 +45,8 @@ local function DelvesStyle()
     local portrait = frame.CompanionPortraitFrame
     portrait.Border:Die()
     --portrait.Icon
+
+    --DelvesDifficultyPickerFrame
 end 
 --[[ 
 ########################################################## 

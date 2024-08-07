@@ -138,7 +138,7 @@ local function PlayerSpellsStyle()
     heroFrame:RemoveTextures(true)
     heroFrame.NineSlice:Hide()
     heroFrame:SetStyle("Frame", "Window")
-    DevTool:AddData(heroFrame, "specSelectionDialog")
+    --DevTool:AddData(heroFrame, "specSelectionDialog")
 
     --SpecOptionsContainer
     hooksecurefunc(specFrame, "UpdateSpecFrame", _hook_SpecFrame_Update)

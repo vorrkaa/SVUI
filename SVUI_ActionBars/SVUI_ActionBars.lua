@@ -709,6 +709,7 @@ do
 
 			if(i > totalButtons) then
 				if hideByScale then
+					button:Show()
 					button:SetScale(0.000001)
 	      			button:SetAlpha(0)
 				else
@@ -722,6 +723,7 @@ do
 				if hideByScale then
 					button:SetScale(1)
 	      			button:SetAlpha(1)
+					button:Show()
 				else
 					button:Show()
 				end

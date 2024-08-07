@@ -163,7 +163,7 @@ local function GetCookingRecipe()
 			tradeSkillID, _, parentTradeSkillID = C_TradeSkillUI.GetTradeSkillLineForRecipe(recipeInfo.recipeID)
 
 			if CookingSkillLineID[tradeSkillID] or CookingSkillLineID[parentTradeSkillID] then
-				DevTool:AddData(recipeInfo, id)
+				--DevTool:AddData(recipeInfo, id)
 				refFavorites[id] = recipeInfo
 			end
 		end
