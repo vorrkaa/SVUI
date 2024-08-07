@@ -102,6 +102,9 @@ function CPU:PrintCPUUsage(nbRow)
 end
 
 function CPU:ADDON_LOADED(addon)
+
+    if GetCVar("scriptProfile") == 0 then return end
+
     if addon == CoreName then
         self.loadedTime = GetTime()
 
@@ -270,6 +273,11 @@ local function initCPUUsage(arg)
 
     if arg == "on" and not timerHandler then
 
+        if GetCVarBool("scriptProfile") == false then
+            SetCVar("scriptProfile", true)
+            ReloadUI()
+        end
+
         timerHandler = C_Timer.NewTicker(1, function()
             for _, addon in ipairs(addons) do
                 CPU:UpdateFunctions(addon)
@@ -279,6 +287,9 @@ local function initCPUUsage(arg)
     elseif arg == "off" and timerHandler and not timerHandler:IsCancelled() then
         timerHandler:Cancel()
         timerHandler = nil
+
+        SetCVar("scriptProfile", false)
+
     elseif arg == "print" then
         CPU:Filter()
         CPU:PrintCPUUsage()
