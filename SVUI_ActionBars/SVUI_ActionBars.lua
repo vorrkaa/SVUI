@@ -661,6 +661,8 @@ do
 			button:ClearAllPoints()
 			button:SetSize(size, size)
 			button:SetAttribute("showgrid",1)
+			button.NewActionTexture:SetSize(size, size)
+			button.SpellHighlightTexture:SetSize(size, size)
 
 			if(SELF_CASTING) then
 				button:SetAttribute("unit2", "player")
@@ -790,10 +792,22 @@ do
 		local point = db.point;
 		local barVisibility = db.customVisibility;
 		local totalButtons = db.buttons or 1;
-		if (totalButtons == 1) or (cols == 1) then
-			print("|CFFFF0000 totalButtons or cols == 1|r", id)
-		end
+
+		--if (totalButtons == 1) or (cols == 1) then
+		--	print("|CFFFF0000 totalButtons or cols == 1|r", id)
+		--end
+
 		local max = (isStance and GetNumShapeshiftForms()) or (isPet and 10) or NUM_ACTIONBAR_BUTTONS;
+		if(id == "Stance") then
+			DevTool:AddData({
+				["isStance"]		= isStance,
+				["StanceCount"]		= GetNumShapeshiftForms(),
+				["Max"]				= max,
+				["Cols"]			= cols,
+				["totalButtons"] 	= totalButtons,
+				["Bar"] 			= bar,
+			}, "RefreshBar")
+		end
 		local rows = ceil(totalButtons  /  cols);
 
 		if max < cols then cols = max end
@@ -924,7 +938,6 @@ local function UpdateAltVehicleBindings()
 				for x = 1, select('#', GetBindingKey(bindString)) do
 					local key = select(x, GetBindingKey(bindString));
 					if (key and key ~= "") then
-						print(clickBind)
 						SetOverrideBindingClick(bar, true, key, clickBind);
 					end
 				end

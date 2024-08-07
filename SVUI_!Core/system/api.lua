@@ -826,10 +826,6 @@ function MOD:APPLY(frame, templateName, underlay, padding, xOffset, yOffset, def
 
     local borderColor = {0,0,0,1}
 
-    if frame:GetName() == "CharacterFrameInsetRight" then
-        print ("|cFFAABBCC APPLY |r", frame:GetName(), templateName, underlay)
-    end
-
     local panel = CreateFrame('Frame', nil, frame, xmlTemplate)
 
     local level = frame:GetFrameLevel()

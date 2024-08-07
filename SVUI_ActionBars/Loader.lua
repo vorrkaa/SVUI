@@ -17,6 +17,8 @@ local L = SV.L;
 local MOD = SV:NewModule(...);
 local Schema = MOD.Schema;
 
+local NUM_STANCE_SLOTS = NUM_STANCE_SLOTS or 10
+
 MOD.media = {}
 MOD.media.microMenuFile = [[Interface\AddOns\SVUI_ActionBars\assets\MICROMENU]];
 MOD.media.microMenuCoords = {

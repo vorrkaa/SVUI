@@ -43,8 +43,9 @@ local function SummonToast(friendName, queueText, queueDesc, id, parent)
 	superToast.Text:SetFont(SV.media.font.alert, 12, "None") 
 	superToast.Text:SetAllPoints(superToast);
 
-	print ("SummonToast: ", superToast:GetName(), friendName .. " joined " .. queueText)
+	--print ("SummonToast: ", superToast:GetName(), friendName .. " joined " .. queueText)
 	SV.API:Set("Button", superToast);
+	--superToast:SetStyle("Button")
 	
 	local cTime = time();
 	superToast.animation = superToast:CreateAnimationGroup();

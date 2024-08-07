@@ -229,9 +229,9 @@ SPELLBOOK MODR
 ]]--
 
 local _hook_SpellBook_OnShow = function(self)
-	print("---- _hook_SpellBook_OnShow ----")
+	--print("---- _hook_SpellBook_OnShow ----")
 	for _, child in pairs(self.tabSystem.tabs) do
-		print (_, child)
+		--print (_, child)
 
 		for _,prop in pairs(FrameSuffix) do 
 			local frame = child[prop]

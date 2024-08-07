@@ -778,9 +778,11 @@ do
 		SV:SetFrameVisibilityLocks(chat);
 		-------------------------------------------
 
-		print("|cFFFF0000 ConfigChatFrame", chatName, chatID)
+		--print("|cFFFF0000 ConfigChatFrame", chatName, chatID)
+
 		--chat:SetStyle("Frame", "Transparent", true, 1, 3, 6);
 		--chat.Panel:Hide();
+
 		chat.Dock = SV.Dock:NewDocklet(
 			"BottomLeft", 
 			format("SVUI_ChatFrameDock%d", chatID), 
