@@ -38,11 +38,11 @@ local IsModifiedClick       = _G.IsModifiedClick;
 local PlaySound             = _G.PlaySound;
 local PlaySoundKitID        = _G.PlaySoundKitID;
 local GetTime               = _G.GetTime;
-local C_Scenario            = _G.C_Scenario;
+local GetCriteriaInfo            = C_ScenarioInfo.GetCriteriaInfo;
 local GetWorldElapsedTimers = _G.GetWorldElapsedTimers;
 local GetInstanceInfo 		= _G.GetInstanceInfo;
 local GetWorldElapsedTime 	= _G.GetWorldElapsedTime;
-local GetTimeStringFromSeconds	= _G.GetTimeStringFromSeconds;
+local SecondsToTime 		= _G.SecondsToTime;
 local GetChallengeModeMapTimes 	= _G.GetChallengeModeMapTimes;
 local GENERIC_FRACTION_STRING 	= _G.GENERIC_FRACTION_STRING;
 local CHALLENGE_MEDAL_GOLD   	= _G.CHALLENGE_MEDAL_GOLD;
@@ -51,6 +51,7 @@ local CHALLENGE_MEDAL_TEXTURES  = _G.CHALLENGE_MEDAL_TEXTURES;
 local CHALLENGE_MODE_COMPLETE_TIME_EXPIRED = _G.CHALLENGE_MODE_COMPLETE_TIME_EXPIRED;
 local LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE = _G.LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE;
 local LE_WORLD_ELAPSED_TIMER_TYPE_PROVING_GROUND = _G.LE_WORLD_ELAPSED_TIMER_TYPE_PROVING_GROUND;
+local LE_WORLD_ELAPSED_TIMER_TYPE_NONE = LE_WORLD_ELAPSED_TIMER_TYPE_NONE
 --[[
 ##########################################################
 GET ADDON DATA
@@ -82,7 +83,7 @@ local TimerBar_OnUpdate = function(self, elapsed)
 	local statusbar = self.Bar
 	statusbar.elapsed = statusbar.elapsed + elapsed;
 	local currentTime = statusbar.duration - statusbar.elapsed
-	local timeString = GetTimeStringFromSeconds(currentTime)
+	local timeString = SecondsToTime(currentTime)
 	local r,g,b = MOD:GetTimerTextColor(statusbar.duration, statusbar.elapsed)
 	if(statusbar.elapsed <= statusbar.duration) then
 		statusbar:SetValue(currentTime);
@@ -97,84 +98,113 @@ end
 TRACKER FUNCTIONS
 ##########################################################
 ]]--
-local SetScenarioData = function(self, title, stageName, currentStage, numStages, stageDescription, numObjectives)
-	local objective_rows = 0;
-	local fill_height = 0;
-	local block = self.Block;
-    local mythic_txt = ""
 
-	block.HasData = true;
-    local _, _, difficulty, _, _, _, _, mapID = GetInstanceInfo();
+---@param self Frame Scenario
+---@param title string
+---@param currentStage number
+---@param numStages number
+local SetScenarioData = function(self, title, currentStage, numStages)
+	local objective_rows = 0
+	local fill_height = 0
+	local header = self.Header
+	local mythic_txt = ""
 
+	local stageName, stageDescription, numObjectives = C_Scenario.GetStepInfo()
+
+	header.HasData = true
+	local _, _, difficulty, _, _, _, _, mapID = GetInstanceInfo()
+
+	--Mythic Keystone
 	if (difficulty == 8) then
-        local cmLevel, affixes, empowered = C_ChallengeMode.GetActiveKeystoneInfo();
-        local bonus = C_ChallengeMode.GetPowerLevelDamageHealthMod(cmLevel);
+		local cmLevel, affixes, empowered = C_ChallengeMode.GetActiveKeystoneInfo();
+		local damageMod, healthMod = C_ChallengeMode.GetPowerLevelDamageHealthMod(cmLevel);
 
-        cmLevel, affixes, empowered = C_ChallengeMode.GetActiveKeystoneInfo();
+		local cmID = C_ChallengeMode.GetActiveChallengeMapID();
+		if(cmID) then
+			local _, _, _, texture = C_ChallengeMode.GetMapUIInfo(cmID);
+			header.ScenarioIcon:SetTexture(texture)
+		end
 
-        for _, affixID in ipairs(affixes) do
-            local affixName, affixDesc, _ = C_ChallengeMode.GetAffixInfo(affixID);
-            mythic_txt = mythic_txt.." - "..affixName;
-        end
-		block.Header.Stage:SetText("|cFFFFFF00"..title .. ' +' .. cmLevel .. "|cFFFFFFFF" .. mythic_txt)
-		
-    elseif (currentStage ~= 0) then
-		block.Header.Stage:SetText('Stage ' .. currentStage .. ' - ' .. "|cFFFFFF00"..title)
+		for i, affixID in ipairs(affixes) do
+			local affixName, affixDesc, affixTexture = C_ChallengeMode.GetAffixInfo(affixID);
+			mythic_txt = mythic_txt.." - "..affixName;
+
+			header.TitleContainer.Affixes[i]:SetTexture(affixTexture)
+		end
+		--header.TitleContainer.Title:SetText("|cFFFFFF00"..title .. ' +' .. cmLevel .. "|cFFFFFFFF" .. mythic_txt)
+		header.TitleContainer.Title:SetText("|cFFFFFF00"..title .. ' +' .. cmLevel .. "|r")
+
+	elseif (currentStage ~= 0) then
+		header.TitleContainer.Title:SetText('Stage ' .. currentStage .. ' - ' .. "|cFFFFFF00"..title)
+		header.ScenarioIcon:SetTexture(LINE_SCENARIO_ICON)
 	else
-		block.Header.Stage:SetText('')
-		block.Header.Stage:SetText("|cFFFFFF00"..title)
+		header.TitleContainer.Title:SetText('')
+		header.TitleContainer.Title:SetText("|cFFFFFF00"..title)
+
+		header.ScenarioIcon:SetTexture(LINE_SCENARIO_ICON)
 	end
-	block.Icon:SetTexture(LINE_SCENARIO_ICON)
 
-
-    local objective_block = block.Objectives;
+	local objective_block = header.Objectives;
 	for i = 1, numObjectives do
-		local description, criteriaType, completed, quantity, totalQuantity, flags, assetID, quantityString, criteriaID, duration, elapsed, failed, kills = C_Scenario.GetCriteriaInfo(i);
+		--local description, criteriaType, completed, quantity, totalQuantity, flags, assetID, quantityString, criteriaID, duration, elapsed, failed, kills = GetCriteriaInfo(i);
+
+		local scenarioInfo = GetCriteriaInfo(i)
+		local description = scenarioInfo.description
+		local completed = scenarioInfo.completed
+		local duration = scenarioInfo.duration
+		local elapsed = scenarioInfo.elapsed
+		local failed = scenarioInfo.failed
+
 		if(duration > 0 and elapsed <= duration and not (failed or completed)) then
 			objective_rows = objective_block:SetTimer(objective_rows, duration, elapsed);
 			fill_height = fill_height + (INNER_HEIGHT + 2);
 		end
 		if(description and description ~= '') then
-			objective_rows = objective_block:SetInfo(objective_rows, description, completed, failed);
-			fill_height = fill_height + (INNER_HEIGHT + 2);
-		end		
-	end
+			if scenarioInfo.isWeightedProgress == true then
+				objective_rows = objective_block:SetInfo(objective_rows, description, completed, failed, scenarioInfo.quantity, scenarioInfo.totalQuantity)
+			else
+				objective_rows = objective_block:SetInfo(objective_rows, description, completed, failed)
+			end
 
-	local timerHeight = self.Timer:GetHeight()
+			fill_height = fill_height + (INNER_HEIGHT + 2);
+		end
+	end
 
 	if(objective_rows > 0) then
 
 		objective_block:SetHeight(fill_height);
 		objective_block:FadeIn();
-    end
+	end
 
-
-
-	fill_height = fill_height + (LARGE_ROW_HEIGHT + 2) + timerHeight;
-	block:SetHeight(fill_height);
+	fill_height = fill_height + (LARGE_ROW_HEIGHT + 2) + LARGE_ROW_HEIGHT --Offset for vertical time bar + affixes txt
+	header:SetHeight(fill_height);
 
 	MOD.Docklet.ScrollFrame.ScrollBar:SetValue(0)
 end
 
 local UnsetScenarioData = function(self)
-	local block = self.Block;
-	block:SetHeight(1);
-	block.Header.Text:SetText('');
-	block.Header.Stage:SetText('');
-	block.Icon:SetTexture(LINE_SCENARIO_ICON);
-	block.HasData = false;
-	block.Objectives:Reset()
+	local header = self.Header
+	header:SetHeight(1)
+	header.TitleContainer.Title:SetText('')
+	header.TitleContainer.Score:SetText('')
+	self.Timer.Bar.TimeLeft:SetTextColor(1, 1, 1)
+	header.ScenarioIcon:SetTexture(LINE_SCENARIO_ICON)
+	for i=1, 4 do
+		header.TitleContainer.Affixes[i]:SetTexture('')
+	end
+	header.HasData = false;
+	header.Objectives:Reset()
 	self:SetHeight(1);
 	self:SetAlpha(0);
 end
 
 local RefreshScenarioHeight = function(self)
-	if(not self.Block.HasData) then
+	if(not self.Header.HasData) then
 		self:Unset();
 	else
-		local h1 = self.Timer:GetHeight()
-		local h2 = self.Block:GetHeight()
-		self:SetHeight(h1 + h2 + 2);
+		--local h1 = self.Timer:GetHeight()
+		local h2 = self.Header:GetHeight()
+		self:SetHeight(h2 + 2);
 		self:FadeIn();
 	end
 end
@@ -186,16 +216,23 @@ TIMER FUNCTIONS
 local MEDAL_TIMES = {};
 local LAST_MEDAL;
 
+---@param self Frame Scenario.Timer
+---@param elapsed number
+---@param duration number
+---@param medalIndex number
+---@param currWave number for proving grounds
+---@param maxWave number for proving grounds
 local StartTimer = function(self, elapsed, duration, medalIndex, currWave, maxWave)
-	self:SetHeight(INNER_HEIGHT);
-	self:FadeIn();
-	self.Bar.duration = duration or 1;
-	self.Bar.elapsed = elapsed or 0;
-	self.Bar:SetMinMaxValues(0, self.Bar.duration);
-	self.Bar:SetValue(self.Bar.elapsed);
-	self:SetScript("OnUpdate", TimerBar_OnUpdate);
-	local blockHeight = MOD.Headers["Scenario"].Block:GetHeight();
-	MOD.Headers["Scenario"].Block:SetHeight(blockHeight + INNER_HEIGHT + 4);
+	self:SetWidth(INNER_HEIGHT)
+	self:FadeIn()
+	self.Bar.duration = duration or 1
+	self.Bar.elapsed = elapsed or 0
+	self.Bar:SetMinMaxValues(0, self.Bar.duration)
+	self.Bar:SetValue(self.Bar.elapsed)
+	self:SetScript("OnUpdate", TimerBar_OnUpdate)
+
+	--local blockHeight = MOD.Headers["Scenario"].Block:GetHeight();
+	--MOD.Headers["Scenario"].Block:SetHeight(blockHeight + INNER_HEIGHT + 4);
 
 	if (medalIndex < 4) then
 		self.Bar.Wave:SetFormattedText(GENERIC_FRACTION_STRING, currWave, maxWave);
@@ -204,100 +241,98 @@ local StartTimer = function(self, elapsed, duration, medalIndex, currWave, maxWa
 	end
 end
 
+---@param self Frame Scenario.Timer
 local StopTimer = function(self)
-	local timerHeight = self:GetHeight();
-	self:SetHeight(1);
+	local timerWidth = self:GetWidth()
+	self:SetWidth(1);
 	self:SetAlpha(0);
-	self.Bar.duration = 1;
-	self.Bar.elapsed = 0;
+	self.Bar.duration = 1
+	self.Bar.elapsed = 0
+	self.Bar.playedSound = false
+	self.Bar.timeLimit = nil
 	self.Bar:SetMinMaxValues(0, self.Bar.duration);
 	self.Bar:SetValue(0);
 	self:SetScript("OnUpdate", nil);
-	local blockHeight = MOD.Headers["Scenario"].Block:GetHeight();
-	MOD.Headers["Scenario"].Block:SetHeight((blockHeight - timerHeight) + 1);
+
 end
 
-local SetChallengeMedals = function(self, elapsedTime, maxTime)
-	self:SetHeight(INNER_HEIGHT);
-	local blockHeight = MOD.Headers["Scenario"].Block:GetHeight();
-	local cmID = C_ChallengeMode.GetActiveChallengeMapID();
-	MOD.Headers["Scenario"].Block:SetHeight(blockHeight + INNER_HEIGHT + 4);
-	self:FadeIn();
-	self.Bar.timeLimit = maxTime;
-	self.Bar:SetMinMaxValues(0, maxTime);
-	self.Bar:SetValue(elapsedTime);
+---@param self Frame Scenario.Timer
+---@param elapsed number
+---@param maxTime number Time to validate key
+local SetChallengeMedals = function(self, elapsed, maxTime)
 
-	if(cmID) then
+	self:SetWidth(INNER_HEIGHT)
+	self:FadeIn();
+	local bar = self.Bar
+	bar.timeLimit = maxTime
+	bar:SetMinMaxValues(0, maxTime)
+	bar:SetValue(elapsed)
+	bar.elapsed = elapsed
+
+	local height = bar:GetHeight()
+	local chests = bar.Chests
+
+	local cmID = C_ChallengeMode.GetActiveChallengeMapID()
+	if cmID then
+
 		MEDAL_TIMES[1] = maxTime * 0.6; -- 3 chest
 		MEDAL_TIMES[2] = maxTime * 0.8; -- 2 chest
 		MEDAL_TIMES[3] = maxTime -- 1 chest
+
+		chests[1].Spark:ClearAllPoints()
+		chests[1].Spark:SetPoint("TOP", bar, "TOP", 0, -height * 0.6)
+
+		chests[2].Spark:ClearAllPoints()
+		chests[2].Spark:SetPoint("TOP", bar, "TOP", 0, -height * 0.8)
+
+		chests[3].Spark:ClearAllPoints()
+		chests[3].Spark:SetPoint("TOP", bar, "TOP", 0, -height)
 	else
+		for i=1, 3 do
+			chests[i]:ClearAllPoints()
+		end
+
 		for i = 1, select("#", maxTime) do
-			MEDAL_TIMES[i] = select(i, maxTime);
+			MEDAL_TIMES[i] = select(i, maxTime)
 		end
 	end
-	LAST_MEDAL = nil;
-	self:UpdateMedals(elapsedTime);
+
+	self:UpdateMedals(elapsed)
 end
 
-local UpdateChallengeMedals = function(self, elapsedTime)
-	local prevMedalTime = 0;
-	for i = #MEDAL_TIMES, 1, -1 do
-		local currentMedalTime = MEDAL_TIMES[i];
-		if ( elapsedTime < currentMedalTime ) then
-			self.Bar:SetMinMaxValues(0, currentMedalTime - prevMedalTime);
-			self.Bar.medalTime = currentMedalTime;
-			if(CHALLENGE_MEDAL_TEXTURES[i]) then
-				self.Icon:SetTexture(CHALLENGE_MEDAL_TEXTURES[i]);
-			end
-			if(LAST_MEDAL and LAST_MEDAL ~= i) then
-				if(LAST_MEDAL == CHALLENGE_MEDAL_GOLD) then
-					PlaySound(SOUNDKIT.UI_70_CHALLENGE_MODE_KEYSTONE_UPGRADE);
-				elseif(LAST_MEDAL == CHALLENGE_MEDAL_SILVER) then
-					PlaySound(SOUNDKIT.UI_70_CHALLENGE_MODE_KEYSTONE_UPGRADE);
-				else
-					PlaySound(SOUNDKIT.UI_70_CHALLENGE_MODE_COMPLETE_NO_UPGRADE);
-				end
-			end
-			LAST_MEDAL = i;
-			return;
-		else
-			prevMedalTime = currentMedalTime;
-		end
+---@param self Frame Scenario.Timer
+---@param elapsed number
+local UpdateChallengeMedals = function(self, elapsed)
+	local isDeplete = elapsed > MEDAL_TIMES[ #MEDAL_TIMES ]
+	local bar = self.Bar;
+	local timeLeft = bar.timeLimit - elapsed
+	for i = 1, #MEDAL_TIMES do
+		bar.Chests[i].Medal:SetDesaturated(elapsed > MEDAL_TIMES[i])
+	end
+	bar.elapsed = elapsed
+	if timeLeft <= 10 and not bar.playedSound then
+		PlaySound(34154)
+		bar.playedSound = true
 	end
 
-	self.Bar.TimeLeft:SetText(GetTimeStringFromSeconds(elapsedTime));
-	self.Bar:SetValue(0);
-	self.Bar.medalTime = nil;
-	self:SetHeight(1)
-	self.Icon:SetTexture(LINE_FAILED_ICON);
-
-	if(LAST_MEDAL and LAST_MEDAL ~= 0) then
-		PlaySound(SOUNDKIT.UI_70_CHALLENGE_MODE_COMPLETE_NO_UPGRADE);
+	if isDeplete then
+		bar.TimeLeft:SetTextColor(0.847, 0.117, 0.074)
+		bar.TimeLeft:SetText(SecondsToTime(elapsed))
+		bar:SetValue(0)
+	else
+		bar.TimeLeft:SetText(SecondsToTime(timeLeft))
+		bar:SetValue(timeLeft)
 	end
 
-	LAST_MEDAL = 0;
 end
 
+---@param self Frame Scenario.Timer
+---@param elapsed number
+local UpdateChallengeTimer = function(self, elapsed)
+	local bar = self.Bar
 
-local UpdateChallengeTimer = function(self, elapsedTime)
-	local statusBar = self.Bar;
-	if ( statusBar.medalTime ) then
-		local timeLeft = statusBar.medalTime - elapsedTime;
-		if (timeLeft == 10) then
-			if (not statusBar.playedSound) then
-				PlaySoundKitID(34154);
-				statusBar.playedSound = true;
-			end
-		else
-			statusBar.playedSound = false;
-		end
-		if(timeLeft < 0) then
-			self:UpdateMedals(elapsedTime);
-		else
-			statusBar:SetValue(timeLeft);
-			statusBar.TimeLeft:SetText(GetTimeStringFromSeconds(timeLeft));
-		end
+	if bar.timeLimit then
+		self:UpdateMedals(elapsed)
 	end
 end
 
@@ -305,10 +340,12 @@ local UpdateAllTimers = function(self, ...)
 	for i = 1, select("#", ...) do
 		local timerID = select(i, ...);
 		local _, elapsedTime, type = GetWorldElapsedTime(timerID);
+
 		if (type == LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE) then
 			local cmID = C_ChallengeMode.GetActiveChallengeMapID();
 			if(cmID) then
-				local _, _, maxTime = C_ChallengeMode.GetMapInfo(cmID);
+				local _, _, maxTime = C_ChallengeMode.GetMapUIInfo(cmID);
+
 				self:SetMedals(elapsedTime, maxTime);
 				return;
 			end
@@ -318,53 +355,86 @@ local UpdateAllTimers = function(self, ...)
 				self:StartTimer(elapsedTime, duration, diffID, currWave, maxWave)
 				return;
 			end
+		elseif type ~= LE_WORLD_ELAPSED_TIMER_TYPE_NONE then
+			--a simple update
+			if self.Bar.timeLimit then
+				self:UpdateMedals(self.Bar.elapsed + ...)
+			end
 		end
 	end
-	--self:StopTimer()
+
 end
 
+---@param self Frame Scenario
+local function InitData(self)
+	self.Header.Objectives:Reset()
+	local title, currentStage, numStages, flags, _, _, _, xp, money = C_Scenario.GetInfo();
+
+	if title then
+		if currentStage > numStages then
+			self.Timer:StopTimer()
+			self.Header.HasData = false
+		else
+			self:Set(title, currentStage, numStages)
+			if(currentStage > 1) then
+				PlaySound(PlaySoundKitID and "UI_Scenario_Stage_End" or 31757);
+			end
+		end
+	end
+end
+
+---@param self Frame Scenario
+---@param event string event
+---@param ... any payload for the event
 local RefreshScenarioObjective = function(self, event, ...)
-	local _, _, difficulty, _, _, _, _, _ = GetInstanceInfo();
+
 	if(C_Scenario.IsInScenario()) then
-		if(event == "PLAYER_ENTERING_WORLD") then
-			self.Timer:UpdateTimers(GetWorldElapsedTimers());
-		elseif(event == "WORLD_STATE_TIMER_START" or event ==  "CHALLENGE_MODE_START" or event ==  "CHALLENGE_MODE_RESET") then
+
+		if(event == "PLAYER_ENTERING_WORLD" or event ==  "CHALLENGE_MODE_START") then
+			if not self.Header.HasData then
+				InitData(self)
+				if (select(3, GetInstanceInfo()) == 8) then
+					self.Timer:SetScript("OnUpdate", UpdateAllTimers)
+				end
+				self:RefreshHeight()
+			end
+			self.Timer:UpdateTimers(GetWorldElapsedTimers())
+		elseif(event == "WORLD_STATE_TIMER_START"  or event ==  "CHALLENGE_MODE_RESET") then
 			self.Timer:UpdateTimers(...)
-			if (difficulty == 8) then
-				self.Timer:SetScript("OnUpdate", UpdateAllTimers);
+			-- MM+
+			if (select(3, GetInstanceInfo()) == 8) then
+				self.Timer:SetScript("OnUpdate", UpdateAllTimers)
 			end
 		elseif(event == "WORLD_STATE_TIMER_STOP" or event ==  "CHALLENGE_MODE_COMPLETED") then
 			self.Timer:StopTimer()
 		elseif(event == "PROVING_GROUNDS_SCORE_UPDATE") then
 			local score = ...
-			self.Block.Header.Score:SetText(score);
+			self.Header.TitleContainer.Score:SetText(score)
 		elseif(event == "SCENARIO_COMPLETED" or event == 'SCENARIO_UPDATE' or event == 'SCENARIO_CRITERIA_UPDATE') then
 			if(event == "SCENARIO_COMPLETED") then
 				self.Timer:StopTimer()
 			else
-				self.Block.Objectives:Reset()
+				self.Header.Objectives:Reset()
 				local title, currentStage, numStages, flags, _, _, _, xp, money = C_Scenario.GetInfo();
-				if(title) then
-					local stageName, stageDescription, numObjectives = C_Scenario.GetStepInfo();
-					-- local inChallengeMode = bit.band(flags, SCENARIO_FLAG_CHALLENGE_MODE) == SCENARIO_FLAG_CHALLENGE_MODE;
-					-- local inProvingGrounds = bit.band(flags, SCENARIO_FLAG_PROVING_GROUNDS) == SCENARIO_FLAG_PROVING_GROUNDS;
-					-- local dungeonDisplay = bit.band(flags, SCENARIO_FLAG_USE_DUNGEON_DISPLAY) == SCENARIO_FLAG_USE_DUNGEON_DISPLAY;
-					local scenariocompleted = currentStage > numStages;
-					if(not scenariocompleted) then
-						self:Set(title, stageName, currentStage, numStages, stageDescription, numObjectives)
+
+				if title then
+					if currentStage > numStages then
+						self.Timer:StopTimer()
+						self.Header.HasData = false
+					else
+						self:Set(title, currentStage, numStages)
 						if(currentStage > 1) then
 							PlaySound(PlaySoundKitID and "UI_Scenario_Stage_End" or 31757);
 						end
-					else
-						self.Timer:StopTimer()
-						self.Block.HasData = false
 					end
 				end
+
 			end
 		end
+
 	else
 		self.Timer:StopTimer()
-		self.Block.HasData = false
+		self.Header.HasData = false
 	end
 
 	self:RefreshHeight()
@@ -392,59 +462,96 @@ function MOD:InitializeScenarios()
 	scenario:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0);
 	scenario:SetPoint("TOPRIGHT", scrollChild, "TOPRIGHT", 0, 0);
 
-	scenario.Set = SetScenarioData;
-	scenario.Unset = UnsetScenarioData;
-	scenario.Refresh = RefreshScenarioObjective;
-	scenario.RefreshHeight = RefreshScenarioHeight;
+	scenario.Set = SetScenarioData
+	scenario.Unset = UnsetScenarioData
+	scenario.Refresh = RefreshScenarioObjective
+	scenario.RefreshHeight = RefreshScenarioHeight
 
-	local block = CreateFrame("Frame", nil, scenario)
-	block:SetPoint("TOPLEFT", scenario, "TOPLEFT", 2, -2);
-	block:SetPoint("TOPRIGHT", scenario, "TOPRIGHT", -2, -2);
-	block:SetHeight(1);
-	block:SetStyle("Frame", "Lite");
+	--[[
+		Construction of the Window
 
-	block.Badge = CreateFrame("Frame", nil, block)
-	block.Badge:SetPoint("TOPLEFT", block, "TOPLEFT", 4, -4);
-	block.Badge:SetSize((LARGE_INNER_HEIGHT - 4), (LARGE_INNER_HEIGHT - 4));
-	block.Badge:SetStyle("!_Frame", "Inset")
+		Header as parent
+			Badge as border Icon
+			ScenarioIcon
+			TitleContainer
+				Title
+				Score
 
-	block.Icon = block.Badge:CreateTexture(nil,"OVERLAY")
-	block.Icon:InsetPoints(block.Badge);
-	block.Icon:SetTexture(LINE_SCENARIO_ICON)
-	block.Icon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
+		TimerBar
+		TimerText
+		MedalSparks
+		MedalIcons
 
-	block.Header = CreateFrame("Frame", nil, block)
-	block.Header:SetPoint("TOPLEFT", block.Badge, "TOPRIGHT", 4, -1);
-	block.Header:SetPoint("TOPRIGHT", block, "TOPRIGHT", -4, 0);
-	block.Header:SetHeight(INNER_HEIGHT);
-	block.Header:SetStyle("Frame")
+	]]--
 
-	block.Header.Stage = block.Header:CreateFontString(nil,"OVERLAY")
-	block.Header.Stage:SetFontObject(SVUI_Font_Quest);
-	block.Header.Stage:SetJustifyH('LEFT')
-	block.Header.Stage:SetText('')
-	block.Header.Stage:SetPoint("TOPLEFT", block.Header, "TOPLEFT", 4, 0);
-	block.Header.Stage:SetPoint("BOTTOMLEFT", block.Header, "BOTTOMLEFT", 4, 0);
+	--HEADER
+	local header = CreateFrame("Frame", nil, scenario)
+	header:SetPoint("TOPLEFT", scenario, "TOPLEFT", 2, -2)
+	header:SetPoint("TOPRIGHT", scenario, "TOPRIGHT", -2, -2)
+	header:SetHeight(1)
+	header:SetStyle("Frame", "Lite")
 
-	block.Header.Score = block.Header:CreateFontString(nil,"OVERLAY")
-	block.Header.Score:SetFontObject(SVUI_Font_Quest);
-	block.Header.Score:SetJustifyH('RIGHT')
-	block.Header.Score:SetTextColor(1,1,0)
-	block.Header.Score:SetText('')
-	block.Header.Score:SetPoint("TOPRIGHT", block.Header, "TOPRIGHT", -2, 0);
-	block.Header.Score:SetPoint("BOTTOMRIGHT", block.Header, "BOTTOMRIGHT", -2, 0);
+	local badge = CreateFrame("Frame", nil, header)
+	badge:SetPoint("TOPLEFT", header, "TOPLEFT", 4, -4);
+	badge:SetSize((LARGE_INNER_HEIGHT - 4), (LARGE_INNER_HEIGHT - 4));
+	badge:SetStyle("!_Frame", "Inset")
 
-	block.Header.Text = block.Header:CreateFontString(nil,"OVERLAY")
-	block.Header.Text:SetFontObject(SVUI_Font_Quest);
-	block.Header.Text:SetTextColor(1,1,0)
-	block.Header.Text:SetText('')
-	block.Header.Text:SetPoint("TOPLEFT", block.Header.Stage, "TOPRIGHT", 4, 0);
-	block.Header.Text:SetPoint("BOTTOMRIGHT", block.Header.Score, "BOTTOMRIGHT", 0, 0);
+	local scenarioIcon = badge:CreateTexture(nil,"OVERLAY")
+	scenarioIcon:InsetPoints(badge);
+	scenarioIcon:SetTexture(LINE_SCENARIO_ICON)
+	scenarioIcon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
 
-	local timer = CreateFrame("Frame", nil, block.Header)
-	timer:SetPoint("TOPLEFT", block.Header, "BOTTOMLEFT", 4, -4);
-	timer:SetPoint("TOPRIGHT", block.Header, "BOTTOMRIGHT", -4, -4);
-	timer:SetHeight(INNER_HEIGHT);
+	local titleContainer = CreateFrame("Frame", nil, header)
+	titleContainer:SetPoint("TOPLEFT", badge, "TOPRIGHT", 4, -1);
+	titleContainer:SetPoint("TOPRIGHT", header, "TOPRIGHT", -4, 0);
+	titleContainer:SetHeight(INNER_HEIGHT);
+	titleContainer:SetStyle("Frame")
+
+	local title = titleContainer:CreateFontString(nil,"OVERLAY")
+	title:SetFontObject(SVUI_Font_Quest_Header)
+	title:SetJustifyH('LEFT')
+	title:SetJustifyV('TOP')
+	title:SetText('')
+	title:SetPoint("TOPLEFT", titleContainer, "TOPLEFT", 4, 0);
+	title:SetPoint("BOTTOMLEFT", titleContainer, "BOTTOMLEFT", 4, 0);
+
+	local score = titleContainer:CreateFontString(nil,"OVERLAY")
+	score:SetFontObject(SVUI_Font_Quest)
+	score:SetJustifyH('RIGHT')
+	score:SetJustifyV('TOP')
+	score:SetTextColor(1,1,0)
+	score:SetText('')
+	score:SetPoint("TOPRIGHT", titleContainer, "TOPRIGHT", -2, 0);
+	score:SetPoint("BOTTOMRIGHT", titleContainer, "BOTTOMRIGHT", -2, 0);
+
+	local affixes = {}
+	for i=1,4 do
+		affixes[i] = titleContainer:CreateTexture(nil, "OVERLAY")
+		affixes[i]:SetSize(24, 24)
+		affixes[i]:SetTexCoord(unpack(SVUI_ICON_COORDS))
+		if i == 1 then
+			affixes[i]:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+		else
+			affixes[i]:SetPoint("LEFT", affixes[i-1], "RIGHT", 0, 0)
+		end
+	end
+
+	titleContainer.Title = title
+	titleContainer.Score = score
+	titleContainer.Affixes = affixes
+
+	header.Badge = badge
+	header.ScenarioIcon = scenarioIcon
+	header.TitleContainer = titleContainer
+
+	--TIMER
+
+	local timer = CreateFrame("Frame", nil, header)
+	timer:SetPoint("TOPLEFT", badge, "BOTTOMLEFT", 0, -4);
+	timer:SetPoint("TOPRIGHT", badge, "BOTTOMRIGHT", 0, -4);
+	timer:SetPoint("BOTTOM", scenario, "BOTTOM", 0, 14)
+	--timer:SetWidth(INNER_HEIGHT)
+	--timer:SetHeight(INNER_HEIGHT);
 	timer:SetStyle("!_Frame", "Bar");
 
 	timer.StartTimer = StartTimer;
@@ -454,41 +561,66 @@ function MOD:InitializeScenarios()
 	timer.UpdateMedals = UpdateChallengeMedals;
 	timer.UpdateChallenges = UpdateChallengeTimer;
 
-	timer.Bar = CreateFrame("StatusBar", nil, timer);
-	timer.Bar:SetAllPoints(timer);
-	timer.Bar:SetStatusBarTexture(SV.media.statusbar.default)
-	timer.Bar:SetStatusBarColor(0.5,0,1) --1,0.15,0.08
-	timer.Bar:SetMinMaxValues(0, 1)
-	timer.Bar:SetValue(0)
+	local bar = CreateFrame("StatusBar", nil, timer);
+	bar:SetAllPoints(timer);
+	bar:SetStatusBarTexture(SV.media.statusbar.default)
+	bar:SetStatusBarColor( 0.5, 0, 1) --1,0.15,0.08
+	bar:SetMinMaxValues(0, 1)
+	bar:SetValue(0)
+	bar:SetOrientation("VERTICAL")
+	--bar:SetReverseFill(true)
 
-	timer.Bar.Wave = timer.Bar:CreateFontString(nil,"OVERLAY")
-	timer.Bar.Wave:SetPoint("TOPLEFT", timer.Bar, "TOPLEFT", 4, 0);
-	timer.Bar.Wave:SetPoint("BOTTOMLEFT", timer.Bar, "BOTTOMLEFT", 4, 0);
-	timer.Bar.Wave:SetFontObject(SVUI_Font_Quest);
-	timer.Bar.Wave:SetJustifyH('LEFT')
-	timer.Bar.Wave:SetTextColor(1,1,0)
-	timer.Bar.Wave:SetText('')
+	local wave = bar:CreateFontString(nil,"OVERLAY")
+	wave:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, -4);
+	wave:SetPoint("TOPRIGHT", bar, "TOPRIGHT", 0, -4);
+	wave:SetFontObject(SVUI_Font_Quest);
+	wave:SetJustifyH('LEFT')
+	wave:SetTextColor(1,1,0)
+	wave:SetText('')
 
-	timer.Bar.TimeLeft = timer.Bar:CreateFontString(nil,"OVERLAY");
-	timer.Bar.TimeLeft:SetPoint("TOPLEFT", timer.Bar, "TOPRIGHT", 4, -4);
-	timer.Bar.TimeLeft:SetFontObject(SVUI_Font_Quest_Number);
-	timer.Bar.TimeLeft:SetTextColor(1,1,1)
-	timer.Bar.TimeLeft:SetText('')
+	local timeLeft = bar:CreateFontString(nil,"OVERLAY");
+	timeLeft:SetPoint("BOTTOM", header, "BOTTOM", 0, 10);
+	timeLeft:SetFontObject(SVUI_Font_Quest_Number);
+	timeLeft:SetTextColor(1,1,1)
+	timeLeft:SetText('')
 
-	timer.Icon = block.Icon;
-	timer:SetHeight(1);
+	local chests = {}
+	--Sparks and Medals
+	local spark, medal
+	for i=1, 3 do
+		spark = bar:CreateTexture(nil,"OVERLAY")
+		spark:SetWidth((LARGE_INNER_HEIGHT - 4))
+		spark:SetHeight(1)
+		spark:SetColorTexture(1, 1, 1)
+
+		medal = bar:CreateTexture(nil, "OVERLAY")
+		medal:SetSize((LARGE_INNER_HEIGHT - 4), (LARGE_INNER_HEIGHT - 4))
+		medal:SetPoint("LEFT", spark, "RIGHT", -4, 0)
+		medal:SetTexture(CHALLENGE_MEDAL_TEXTURES[4 - i]) --bronze is 1st index, we want gold as 1st ...
+
+		chests[i] = {
+			["Spark"] = spark,
+			["Medal"] = medal,
+		}
+	end
+
+	bar.Wave = wave
+	bar.TimeLeft = timeLeft
+	bar.Chests = chests
+
+	timer.Bar = bar
 	timer:SetAlpha(0)
 
+	local objectives = MOD.NewObjectiveHeader(header);
+	objectives:SetPoint("LEFT", timer, "RIGHT", 12, 0)
+	objectives:SetPoint("RIGHT", header, "RIGHT", -4, 0)
+	objectives:SetHeight(1);
 
-	block.Objectives = MOD.NewObjectiveHeader(block);
-	block.Objectives:SetPoint("TOPLEFT", timer, "BOTTOMLEFT", -4, -4);
-	block.Objectives:SetPoint("TOPRIGHT", timer, "BOTTOMRIGHT", 4, -4);
-	block.Objectives:SetHeight(1);
-
-	block.HasData = false;
+	header.Objectives = objectives
+	header.HasData = false;
 
 	scenario.Timer = timer;
-	scenario.Block = block;
+	scenario.Header = header;
 
 	self.Headers["Scenario"] = scenario;
 
@@ -505,7 +637,6 @@ function MOD:InitializeScenarios()
 	self:RegisterEvent("CHALLENGE_MODE_START", self.UpdateScenarioObjective);
 	self:RegisterEvent("CHALLENGE_MODE_COMPLETED", self.UpdateScenarioObjective);
 	self:RegisterEvent("CHALLENGE_MODE_RESET", self.UpdateScenarioObjective);
-
 
 	SV.Events:On("QUEST_UPVALUES_UPDATED", UpdateScenarioLocals, true);
 end

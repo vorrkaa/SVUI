@@ -87,16 +87,26 @@ local function CacheBonusData(questID, xp, money)
 		tinsert(data.rewards, t);
 	end
 
-	local numCurrencies = GetNumQuestLogRewardCurrencies(questID);
-	for i = 1, numCurrencies do
-		local name, texture, count = GetQuestLogRewardCurrencyInfo(i, questID);
-		local t = {};
-		t.label = name;
-		t.texture = texture;
-		t.count = count;
+	local questRewardCurrencies  = C_QuestLog.GetQuestRewardCurrencies(questID)
+	for i=1, #questRewardCurrencies do
+		local t = {}
+		t.label = questRewardCurrencies[i].name
+		t.texture = questRewardCurrencies[i].texture
+		t.count = questRewardCurrencies[i].totalRewardAmount
 		t.font = "GameFontHighlightSmall";
 		tinsert(data.rewards, t);
 	end
+
+	--local numCurrencies = GetNumQuestLogRewardCurrencies(questID);
+	--for i = 1, numCurrencies do
+	--	local name, texture, count = GetQuestLogRewardCurrencyInfo(i, questID);
+	--	local t = {};
+	--	t.label = name;
+	--	t.texture = texture;
+	--	t.count = count;
+	--	t.font = "GameFontHighlightSmall";
+	--	tinsert(data.rewards, t);
+	--end
 
 	local numItems = GetNumQuestLogRewards(questID);
 	for i = 1, numItems do

@@ -81,7 +81,7 @@ local Hook_QuestInfoItem_OnClick = function(self)
 	_G.QuestInfoItemHighlight:Show()
 end
 
-local Hook_QuestNPCModel = function(self, _, _, _, _, x, y)
+local Hook_QuestNPCModel = function(self, _, _, _, _, _, x, y, _)
 	QuestModelScene:ClearAllPoints()
 	QuestModelScene:SetPoint("TOPLEFT", self, "TOPRIGHT", x + 18, y)
 

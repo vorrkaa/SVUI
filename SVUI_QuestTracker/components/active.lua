@@ -319,7 +319,7 @@ local function UpdateActiveLocals(...)
 end
 
 function MOD:InitializeActive()
-	local active = CreateFrame("Frame", nil, self.Docklet)
+	local active = CreateFrame("Frame", "SVUI_QuestTrackerActiveFrame", self.Docklet)
     active:SetPoint("TOPLEFT", self.Docklet, "TOPLEFT");
     active:SetPoint("TOPRIGHT", self.Docklet, "TOPRIGHT");
     active:SetHeight(1);
