@@ -81,25 +81,30 @@ function SV:VendorGrays(destroy, silent, request)
 	local canDelete = 0;
 
 	for bagID = 0, 4 do
-		for slot = 1, GetContainerNumSlots(bagID) do
-			local itemLink = GetContainerItemLink(bagID, slot)
+		for slot = 1, C_Container.GetContainerNumSlots(bagID) do
+			local itemLink = C_Container.GetContainerItemLink(bagID, slot)
 			if(itemLink) then
-				local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(itemLink)
+				local item = C_Item.GetItemInfo(itemLink)
+				local quality = item.itemQuality
+				local vendorPrice = item.sellPrice
+				--local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(itemLink)
 				if(vendorPrice) then
-					local itemCount = select(2, GetContainerItemInfo(bagID, slot))
+					local itemInfo = C_Container.GetContainerItemInfo(bagID, slot)
+					local itemCount = itemInfo.stackCount
+					--local itemCount = select(2, GetContainerItemInfo(bagID, slot))
 					local sellPrice = vendorPrice * itemCount
-					local itemID = GetContainerItemID(bagID, slot);
+					local itemID = C_Container.GetContainerItemID(bagID, slot);
 					if(destroy) then
 						if(find(itemLink, "ff9d9d9d")) then
 							if(not request) then
-								PickupContainerItem(bagID, slot)
+								C_Container.PickupContainerItem(bagID, slot)
 								DeleteCursorItem()
 							end
 							totalValue = totalValue + sellPrice;
 							canDelete = canDelete + 1
 						elseif(SV.Inventory:VendorCheck(itemID, bagID, slot)) then
 							if(not request) then
-								PickupContainerItem(bagID, slot)
+								C_Container.PickupContainerItem(bagID, slot)
 								DeleteCursorItem()
 							end
 							totalValue = totalValue + sellPrice;
@@ -108,7 +113,7 @@ function SV:VendorGrays(destroy, silent, request)
 					elseif(sellPrice > 0) then
 						if(quality == 0) then
 							if(not request) then
-								UseContainerItem(bagID, slot)
+								C_Container.UseContainerItem(bagID, slot)
 								PickupMerchantItem()
 							end
 							totalValue = totalValue + sellPrice
@@ -302,34 +307,37 @@ do
 	local ACTIVE_QUESTS = {};
 
 	local function ParseGossipAvailableQuests(...)
-		local logCount = GetNumQuestLogEntries()
+		local logCount = C_QuestLog.GetNumQuestLogEntries()
+		local questInfo
 		twipe(ACTIVE_QUESTS)
 		for i=1, logCount do
-			local title, level, suggestedGroup, isHeader, isCollapsed, isComplete = GetQuestLogTitle(i)
+			questInfo = C_QuestLog.GetInfo(i)
+			local title = questInfo.title
+			local isComplete = C_QuestLog.IsComplete(questInfo.questID)
 			ACTIVE_QUESTS[title] = isComplete;
 		end
-		for i=1, select("#", ...), 6 do
-			local title = select(i, ...);
+
+		for i, quest in ipairs(...) do
+			local title = quest.title
 			if(ACTIVE_QUESTS[title] == nil) then
-				SelectGossipAvailableQuest(i);
+				C_GossipInfo.SelectAvailableQuest(quest.questID)
 			end
 		end
 	end
 
 	local function ParseGossipActiveQuests(...)
-		for i=1, select("#", ...), 6 do
-			local title = select(i, ...);
-			if(ACTIVE_QUESTS[title]) then
-				SelectGossipActiveQuest(i);
+		for i, quest in ipairs(...) do
+			local title = quest.title
+			if(ACTIVE_QUESTS[title] == nil) then
+				C_GossipInfo.SelectActiveQuest(quest.questID)
 			end
 		end
 	end
 
 	function SV:GOSSIP_SHOW()
 	    if(self.db.Extras.autoquestaccept == true and self:AutoQuestProxy()) then
-	    	local numOther = GetNumGossipOptions()
-	    	ParseGossipAvailableQuests(GetGossipAvailableQuests())
-	    	ParseGossipActiveQuests(GetGossipActiveQuests())
+			ParseGossipAvailableQuests(C_GossipInfo.GetAvailableQuests())
+			ParseGossipActiveQuests(C_GossipInfo.GetActiveQuests())
 	    end
 	end
 end
@@ -370,7 +378,9 @@ function SV:QUEST_COMPLETE()
 		for i = 1, rewards do
 			local iLink = GetQuestItemLink("choice", i)
 			if iLink then
-				local iValue = select(11,GetItemInfo(iLink))
+				local itemInfo = C_Item.GetItemInfo(iLink)
+				local iValue = itemInfo.itemLevel
+				--local iValue = select(11,GetItemInfo(iLink))
 				if iValue and iValue > value then
 					value = iValue;
 					selection = i

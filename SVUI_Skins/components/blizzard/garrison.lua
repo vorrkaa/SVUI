@@ -415,15 +415,25 @@ local function LoadGarrisonStyle()
 	GarrisonLandingPageShipFollowerList:RemoveTextures()
 	GarrisonLandingPageShipFollowerList:SetStyle("Frame", 'Inset', false, 4, 0, 0)
 
-	--TODO: fix this ScrollFrame
-	for i = 1, GarrisonLandingPageReportListListScrollFrameScrollChild:GetNumChildren() do
-		local child = select(i, GarrisonLandingPageReportListListScrollFrameScrollChild:GetChildren())
-		for j = 1, child:GetNumChildren() do
-			local childC = select(j, child:GetChildren())
-			childC.Icon:SetTexCoord(0.1,0.9,0.1,0.9)
-			childC.Icon:SetDesaturated(false)
+	local function _hook_GarrisonLandingPageReportList_Update()
+		for index, frame in GarrisonLandingPageReport.List.ScrollBox:EnumerateFrames() do
+			frame.MissionTypeIcon:SetTexCoord(unpack(SVUI_ICON_COORDS))
+			frame.MissionTypeIcon:SetDesaturated(false)
 		end
 	end
+
+	hooksecurefunc(GarrisonLandingPageReportList_Update, _hook_GarrisonLandingPageReportList_Update)
+	hooksecurefunc(GarrisonLandingPageReportList_UpdateAvailable, _hook_GarrisonLandingPageReportList_Update)
+
+	----TODO: fix this ScrollFrame
+	--for i = 1, GarrisonLandingPageReportListListScrollFrameScrollChild:GetNumChildren() do
+	--	local child = select(i, GarrisonLandingPageReportListListScrollFrameScrollChild:GetChildren())
+	--	for j = 1, child:GetNumChildren() do
+	--		local childC = select(j, child:GetChildren())
+	--		childC.Icon:SetTexCoord(0.1,0.9,0.1,0.9)
+	--		childC.Icon:SetDesaturated(false)
+	--	end
+	--end
 
 	local a1, p, a2, x, y = GarrisonLandingPageTab1:GetPoint()
 	GarrisonLandingPageTab1:SetPoint(a1, p, a2, x, 16)

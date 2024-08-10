@@ -377,7 +377,7 @@ local _hook_GameTooltip_OnTooltipSetUnit = function(self)
 		-- end
 		local frames = GetMouseFoci()
 		for _, frame in ipairs(frames) do
-			if frame and frame:GetAttribute("unit") then
+			if frame and frame.GetAttribute then
 				unit = frame:GetAttribute("unit")
 			end
 		end

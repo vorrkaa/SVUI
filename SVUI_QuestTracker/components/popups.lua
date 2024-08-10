@@ -209,9 +209,9 @@ local function UpdatePopupLocals(...)
 end
 
 function MOD:InitializePopups()
-	local popups = CreateFrame("Frame", nil, self.Docklet)
-	popups:SetPoint("BOTTOMLEFT", self.Docklet, "TOPLEFT");
-    popups:SetPoint("BOTTOMRIGHT", self.Docklet, "TOPRIGHT");
+	local popups = CreateFrame("Frame", "SVUI_QuestTrackerPopupFrame", self.Docklet)
+	popups:SetPoint("BOTTOMLEFT", self.Docklet, "TOPLEFT", 0, 40);
+    popups:SetPoint("BOTTOMRIGHT", self.Docklet, "TOPRIGHT", 0, 40);
     popups:SetHeight(1);
 	popups.Rows = {};
 

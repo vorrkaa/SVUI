@@ -271,7 +271,7 @@ end
 
 local OBJECTIVE_HEADER_SetInfo = function(self, index, ...)
 	index = index + 1;
-	local description, completed, failed = ...
+	local description, completed, failed, quantity, totalQuantity = ...
 	local objective = self:Get(index);
 
 	if(failed) then
@@ -284,9 +284,14 @@ local OBJECTIVE_HEADER_SetInfo = function(self, index, ...)
 		objective.Text:SetTextColor(0.6,0.6,0.6)
 		objective.Icon:SetTexture(OBJ_ICON_INCOMPLETE)
 	end
-	objective.Text:SetText(description);
-	objective:SetHeight(INNER_HEIGHT);
-	objective:FadeIn();
+	if quantity and totalQuantity then
+		objective.Text:SetText( ("%s: %i/%i - %.2f%%"):format( description, quantity, totalQuantity, quantity/totalQuantity ))
+	else
+		objective.Text:SetText(description)
+	end
+
+	objective:SetHeight(INNER_HEIGHT)
+	objective:FadeIn()
 
 	return index;
 end
