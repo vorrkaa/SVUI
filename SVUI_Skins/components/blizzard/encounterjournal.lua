@@ -211,7 +211,7 @@ local function EncounterJournalStyle()
     SV.API:Set("DropDown", EncounterJournalInstanceSelectTierDropDown)
     SV.API:Set("CloseButton", EncounterJournalCloseButton)
 
-    EncounterJournalEncounterFrameInfoResetButton:SetStyle("Button")
+    --EncounterJournalEncounterFrameInfoResetButton:SetStyle("Button")
 
     EncounterJournalNavBar:RemoveTextures(true)
     --EncounterJournalNavBarOverlay:RemoveTextures(true)

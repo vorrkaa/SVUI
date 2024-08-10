@@ -290,7 +290,10 @@ end
 local function UpdateMiniMapCoords()
 	if(WMP_XY_COORD and WorldMapFrame:IsShown()) then return end
     if (IsInInstance()) then return end
-    local cmap = C_Map.GetBestMapForUnit("player")
+
+	local cmap = C_Map.GetBestMapForUnit("player")
+	if not cmap then return end
+
     local position = C_Map.GetPlayerMapPosition(cmap, "player");
     local playerX = position.x
     local playerY = position.y

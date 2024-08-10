@@ -188,16 +188,19 @@ do
 			local itemID, altItemID, name, _, _, _, _, _, _, _, _, altOnTop = C_ArtifactUI.GetArtifactInfo();
             if(iLink and type(iLink) == "string") then
                 iLevel = SV:GetItemLevel(iLink)
-				local relicLevel = GetRelicItemLevel(iLink) * 5;
-				iLevel = iLevel + relicLevel;
+				--C_ArtifactUI.GetItemLevelIncreaseProvidedByRelic(iLink)
+				--local relicLevel = GetRelicItemLevel(iLink) * 5;
+				--local relicLevel = 0
+				--iLevel = iLevel + relicLevel;
                 if(iLevel and iLevel > 0) then
                     -- handle dual wielded artifact weapons properly
                     if (slotName == "SecondaryHandSlot") then
 						local mainslotId = GetInventorySlotInfo("MainHandSlot");
 						local mainiLink = GetInventoryItemLink(unit, mainslotId)
 						local mainiLevel = SV:GetItemLevel(mainiLink);
-						relicLevel = GetRelicItemLevel(mainiLink) * 5;
-						iLevel = mainiLevel + relicLevel;
+						--relicLevel = GetRelicItemLevel(mainiLink) * 5;
+						--iLevel = mainiLevel + relicLevel;
+						iLevel = mainiLevel
                     end
                     totalSlots = totalSlots + 1;
                     averageLevel = averageLevel + iLevel
