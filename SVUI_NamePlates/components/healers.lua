@@ -50,11 +50,25 @@ LOCALS
 
 local HEALER_ROSTER = {};
 local HEALER_SPECS = {
-	["Druid"] = { ["Restoration"] = true, },
-	["Paladin"] = { ["Holy"] = true, },
-	["Priest"] = { ["Discipline"] = true, ["Holy"] = true, },
-	["Shaman"] = { ["Restoration"] = true, },
-	["Monk"] = { ["Mistweaver"] = true, },
+	["Druid"] = {
+		["Restoration"] = true,
+	},
+	["Paladin"] = {
+		["Holy"] = true,
+	},
+	["Priest"] = {
+		["Discipline"] = true,
+		["Holy"] = true,
+	},
+	["Shaman"] = {
+		["Restoration"] = true,
+	},
+	["Monk"] = {
+		["Mistweaver"] = true,
+	},
+	["Evoker"] = {
+		["Preservation"] = true,
+	},
 }
 local HEALER_SPELLS = {
 	[47540] = "PRIEST", -- Penance
