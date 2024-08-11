@@ -152,7 +152,7 @@ local UpdatePlayerThreat = function(self, event, unit)
 		r, g, b = GetThreatStatusColor(status)
 		threat:SetBackdropBorderColor(r, g, b)
 		if(useAggro and (status > 1) and (not aggro:IsShown())) then
-			self.Combat:Hide()
+			self.CombatIndicator:Hide()
 			aggro:Show()
 		end
 		threat:Show()
@@ -161,7 +161,7 @@ local UpdatePlayerThreat = function(self, event, unit)
 		if(useAggro and aggro:IsShown()) then
 			aggro:Hide()
 			if(UnitAffectingCombat('player')) then
-				self.Combat:Show()
+				self.CombatIndicator:Show()
 			end
 		end
 		threat:Hide()

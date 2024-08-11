@@ -1178,8 +1178,8 @@ function MOD:RefreshUnitLayout(frame, template)
 
 			--[[ ROLEICON ]]--
 
-			if(ico.roleIcon and frame.LFDRole) then
-				local lfd = frame.LFDRole;
+			if ico.roleIcon and (frame.GroupRoleIndicator or frame.RaidRoleIndicator) then
+				local lfd = frame.GroupRoleIndicator or frame.RaidRoleIndicator
 				if(not MINI_GRID and ico.roleIcon.enable) then
 					lfd:Show()
 					frame:EnableElement('LFDRole', frame.unit)

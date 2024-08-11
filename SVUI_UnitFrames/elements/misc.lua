@@ -205,7 +205,7 @@ local UpdateRoleIcon = function(self)
 	local key = self.___key
 	local db = SV.db.UnitFrames[key]
 	if(not db or not db.icons or (db.icons and not db.icons.roleIcon)) then return end
-	local lfd = self.LFDRole
+	local lfd = self.GroupRoleIndicator or self.RaidRoleIndicator
 	if(not db.icons.roleIcon.enable) then lfd:Hide() return end
 	local unitRole = UnitGroupRolesAssigned(self.unit)
 	if(self.isForced and unitRole == "NONE") then
@@ -331,8 +331,8 @@ function MOD:CreatePlayerIndicators(frame)
 		end
 	end)
 
-	frame.Resting = resting
-	frame.Combat = combat
+	frame.RestingIndicator = resting
+	frame.CombatIndicator = combat
 end
 
 local ExRep_OnEnter = function(self)if self:IsShown() then UIFrameFadeIn(self,.1,0,1) end end
