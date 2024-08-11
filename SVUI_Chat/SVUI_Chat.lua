@@ -754,7 +754,7 @@ do
 			chatFrame:SetAllPoints(chatFrame.Dock);
 		end
 
-		print ("ChatDock_LeftClickCallback", chatTab, button)
+		--print ("ChatDock_LeftClickCallback", chatTab, button)
 		FCF_Tab_OnClick(chatTab, button)
 	end
 
@@ -1139,7 +1139,14 @@ do
 			chat.Dock:UpdateBackdrop()
 			chat.Dock.Button:SetDocked(isActive)
 			chat:ClearAllPoints();
-			chat:SetAllPoints(chat.Dock);
+			chat:SetAllPoints(chat.Dock)
+
+			if id == 1 then
+				hooksecurefunc(chat, "SetPoint", function(c)
+					c:ClearAllPoints()
+					c:SetAllPoints(c.Dock)
+				end)
+			end
 			FCF_SetLocked(chat, true);
 			SetChatWindowUninteractable(i, false);
 			if(chat.name) then
@@ -1152,7 +1159,7 @@ do
 end
 
 local function OpenNewSVUIChatFrame(newname)
-	print ("OpenNewSVUIChatFrame", newname)
+	--print ("OpenNewSVUIChatFrame", newname)
 	local chatFrame, chatTab;
 	for i,name in pairs(CHAT_FRAMES) do
 		chatFrame = _G[name];

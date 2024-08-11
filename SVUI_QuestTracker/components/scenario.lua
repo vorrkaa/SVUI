@@ -74,6 +74,11 @@ local LARGE_INNER_HEIGHT = LARGE_ROW_HEIGHT - 4;
 local LINE_FAILED_ICON = [[Interface\ICONS\Ability_Blackhand_Marked4Death]];
 local LINE_SCENARIO_ICON = [[Interface\ICONS\Icon_Scenarios]];
 local LINE_CHALLENGE_ICON = [[Interface\ICONS\Achievement_ChallengeMode_Platinum]];
+local COLORS = {
+	{ 0.015, 0.886, 0.38 }, --green
+	{ 1, 0.894, 0.117 }, --yellow
+	{ 0.847, 0.117, 0.074 }, --red
+}
 --[[
 ##########################################################
 SCRIPT HANDLERS
@@ -306,9 +311,15 @@ local UpdateChallengeMedals = function(self, elapsed)
 	local isDeplete = elapsed > MEDAL_TIMES[ #MEDAL_TIMES ]
 	local bar = self.Bar;
 	local timeLeft = bar.timeLimit - elapsed
-	for i = 1, #MEDAL_TIMES do
+
+	for i = #MEDAL_TIMES, 1, -1 do
 		bar.Chests[i].Medal:SetDesaturated(elapsed > MEDAL_TIMES[i])
+
+		if elapsed < MEDAL_TIMES[i] then
+			bar:SetStatusBarColor(unpack(COLORS[i]))
+		end
 	end
+
 	bar.elapsed = elapsed
 	if timeLeft <= 10 and not bar.playedSound then
 		PlaySound(34154)
@@ -549,7 +560,7 @@ function MOD:InitializeScenarios()
 	local timer = CreateFrame("Frame", nil, header)
 	timer:SetPoint("TOPLEFT", badge, "BOTTOMLEFT", 0, -4);
 	timer:SetPoint("TOPRIGHT", badge, "BOTTOMRIGHT", 0, -4);
-	timer:SetPoint("BOTTOM", scenario, "BOTTOM", 0, 14)
+	timer:SetPoint("BOTTOM", scenario, "BOTTOM", 0, 20)
 	--timer:SetWidth(INNER_HEIGHT)
 	--timer:SetHeight(INNER_HEIGHT);
 	timer:SetStyle("!_Frame", "Bar");
@@ -565,10 +576,18 @@ function MOD:InitializeScenarios()
 	bar:SetAllPoints(timer);
 	bar:SetStatusBarTexture(SV.media.statusbar.default)
 	bar:SetStatusBarColor( 0.5, 0, 1) --1,0.15,0.08
+	--bar:SetStatusBarColor( 1,0.15,0.08 )
 	bar:SetMinMaxValues(0, 1)
 	bar:SetValue(0)
 	bar:SetOrientation("VERTICAL")
 	--bar:SetReverseFill(true)
+
+	local overlay = bar:CreateTexture(nil, "OVERLAY", nil, 2)
+	overlay:SetTexture([[Interface\AddOns\SVUI_!Core\assets\backgrounds\pattern\PATTERN12]])
+	overlay:SetAllPoints(true)
+	overlay:SetBlendMode("BLEND")
+	overlay:SetGradient("VERTICAL", CreateColor(1, 1, 1, 0.25), CreateColor(1,1,1,0.75))
+	bar.Overlay = overlay
 
 	local wave = bar:CreateFontString(nil,"OVERLAY")
 	wave:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, -4);
@@ -594,8 +613,9 @@ function MOD:InitializeScenarios()
 		spark:SetColorTexture(1, 1, 1)
 
 		medal = bar:CreateTexture(nil, "OVERLAY")
-		medal:SetSize((LARGE_INNER_HEIGHT - 4), (LARGE_INNER_HEIGHT - 4))
-		medal:SetPoint("LEFT", spark, "RIGHT", -4, 0)
+		medal:SetSize(INNER_HEIGHT*1.5, INNER_HEIGHT*1.5)
+		medal:SetPoint("LEFT", spark, "RIGHT", -2, 0)
+		medal:SetTexCoord(unpack(SVUI_ICON_COORDS))
 		medal:SetTexture(CHALLENGE_MEDAL_TEXTURES[4 - i]) --bronze is 1st index, we want gold as 1st ...
 
 		chests[i] = {
