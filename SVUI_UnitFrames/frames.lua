@@ -196,7 +196,7 @@ local UpdatePlayerFrame = function(self)
     MOD:RefreshUnitLayout(self, "player")
 
     do
-        local resting = self.Resting;
+        local resting = self.RestingIndicator;
         if resting then
             if iconDB and iconDB.restIcon and iconDB.restIcon.enable then
                 local size = iconDB.restIcon.size;
@@ -213,7 +213,7 @@ local UpdatePlayerFrame = function(self)
         end
     end
     do
-        local combat = self.Combat;
+        local combat = self.CombatIndicator;
         if combat then
             if iconDB and iconDB.combatIcon and iconDB.combatIcon.enable then
                 local size = iconDB.combatIcon.size;
