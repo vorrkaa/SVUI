@@ -515,7 +515,7 @@ local methods = {
 		end
 		status.selected = uniquevalue
 		self:RefreshTree(true)
-		DevTool:AddData(uniquevalue, "Select")
+		--DevTool:AddData(uniquevalue, "Select")
 		self:Fire("OnGroupSelected", uniquevalue)
 	end,
 
