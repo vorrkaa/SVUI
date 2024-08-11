@@ -732,7 +732,9 @@ end
 function DriverFrame:OnTargetChanged()
 	local nameplate = C_NamePlate.GetNamePlateForUnit('target', issecure())
 	if nameplate then
-		if nameplate.UnitFrame then nameplate.UnitFrame:OnUnitAuraUpdate() end
+		if nameplate.UnitFrame then
+			nameplate.UnitFrame:OnUnitAuraUpdate()
+		end
 	end
 
 	self:UpdateClassResourceBar()
@@ -1256,7 +1258,6 @@ function UnitFrameMixin:OnEvent(event, ...)
 	if ( event == 'PLAYER_TARGET_CHANGED' ) then
 		CompactUnitFrame_UpdateSelectionHighlight(self);
 		CompactUnitFrame_UpdateName(self);
-
 	elseif ( arg1 == self.unit or arg1 == self.displayedUnit ) then
 		if ( event == 'UNIT_MAXHEALTH' ) then
 			CompactUnitFrame_UpdateMaxHealth(self)
