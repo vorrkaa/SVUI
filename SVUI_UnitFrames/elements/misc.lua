@@ -245,12 +245,12 @@ function MOD:CreateRaidRoleFrames(frame)
 	raidRoles:SetPoint("TOPLEFT", frame.ActionPanel, "TOPLEFT", -2, 4)
 	raidRoles:SetFrameLevel(parent:GetFrameLevel() + 50)
 
-	frame.Leader = raidRoles:CreateTexture(nil, "OVERLAY")
-	frame.Leader:SetSize(12, 12)
-	frame.Leader:SetTexture(MOD.media.lml)
-	frame.Leader:SetTexCoord(0, 0.5, 0, 0.5)
-	frame.Leader:SetVertexColor(1, 0.85, 0)
-	frame.Leader:SetPoint("LEFT")
+	frame.LeaderIndicator = raidRoles:CreateTexture(nil, "OVERLAY")
+	frame.LeaderIndicator:SetSize(12, 12)
+	frame.LeaderIndicator:SetTexture(MOD.media.lml)
+	frame.LeaderIndicator:SetTexCoord(0, 0.5, 0, 0.5)
+	frame.LeaderIndicator:SetVertexColor(1, 0.85, 0)
+	frame.LeaderIndicator:SetPoint("LEFT")
 
 	frame.MasterLooter = raidRoles:CreateTexture(nil, "OVERLAY")
 	frame.MasterLooter:SetSize(12, 12)
@@ -259,14 +259,14 @@ function MOD:CreateRaidRoleFrames(frame)
 	frame.MasterLooter:SetVertexColor(1, 0.6, 0)
 	frame.MasterLooter:SetPoint("RIGHT")
 
-	frame.Leader.PostUpdate = MOD.RaidRoleUpdate;
+	frame.LeaderIndicator.PostUpdate = MOD.RaidRoleUpdate;
 	frame.MasterLooter.PostUpdate = MOD.RaidRoleUpdate;
 	return raidRoles
 end
 
 function MOD:RaidRoleUpdate()
 	local frame = self:GetParent()
-	local leaderIcon = frame.Leader;
+	local leaderIcon = frame.LeaderIndicator;
 	local looterIcon = frame.MasterLooter;
 	if not leaderIcon or not looterIcon then return end
 		local key = frame.___key;
