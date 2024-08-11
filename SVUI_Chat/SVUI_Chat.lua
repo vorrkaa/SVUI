@@ -1143,6 +1143,7 @@ do
 
 			if id == 1 then
 				hooksecurefunc(chat, "SetPoint", function(c)
+					if InCombatLockdown() then return end
 					c:ClearAllPoints()
 					c:SetAllPoints(c.Dock)
 				end)
