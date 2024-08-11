@@ -14,6 +14,10 @@ local SV = _G['SVUI'];
 local L = SV.L;
 local MOD = SV.Skins;
 local Schema = MOD.Schema;
+
+local hooksecurefunc			= hooksecurefunc
+local GetItemQualityColor		= C_Item.GetItemQualityColor
+local GetInventoryItemQuality	= GetInventoryItemQuality
 --[[ 
 ########################################################## 
 HELPERS
