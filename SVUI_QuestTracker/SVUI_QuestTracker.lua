@@ -285,7 +285,7 @@ local OBJECTIVE_HEADER_SetInfo = function(self, index, ...)
 		objective.Icon:SetTexture(OBJ_ICON_INCOMPLETE)
 	end
 	if quantity and totalQuantity then
-		objective.Text:SetText( ("%s: %i/%i - %.2f%%"):format( description, quantity, totalQuantity, quantity/totalQuantity ))
+		objective.Text:SetText( ("%s: %i/%i - %.2f%%"):format( description, quantity, totalQuantity, quantity/totalQuantity*100 ))
 	else
 		objective.Text:SetText(description)
 	end

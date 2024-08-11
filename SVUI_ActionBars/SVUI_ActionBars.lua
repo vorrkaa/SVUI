@@ -798,16 +798,16 @@ do
 		--end
 
 		local max = (isStance and GetNumShapeshiftForms()) or (isPet and 10) or NUM_ACTIONBAR_BUTTONS;
-		if(id == "Stance") then
-			DevTool:AddData({
-				["isStance"]		= isStance,
-				["StanceCount"]		= GetNumShapeshiftForms(),
-				["Max"]				= max,
-				["Cols"]			= cols,
-				["totalButtons"] 	= totalButtons,
-				["Bar"] 			= bar,
-			}, "RefreshBar")
-		end
+		--if(id == "Stance") then
+		--	DevTool:AddData({
+		--		["isStance"]		= isStance,
+		--		["StanceCount"]		= GetNumShapeshiftForms(),
+		--		["Max"]				= max,
+		--		["Cols"]			= cols,
+		--		["totalButtons"] 	= totalButtons,
+		--		["Bar"] 			= bar,
+		--	}, "RefreshBar")
+		--end
 		local rows = ceil(totalButtons  /  cols);
 
 		if max < cols then cols = max end
@@ -1400,7 +1400,7 @@ do
 				end
 
 				if((not PetHasActionBar()) and (not restrictedAction)) then
-					PetActionButton_StopFlash(button)
+					button:StopFlash()
 					SetDesaturation(icon, 1)
 					button:SetChecked(false)
 				end

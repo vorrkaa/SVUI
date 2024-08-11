@@ -103,6 +103,16 @@ end
 TRACKER FUNCTIONS
 ##########################################################
 ]]--
+---@param frame FontString Wave
+local function setScenarioDeathCount(frame)
+	local count, timeLost = C_ChallengeMode.GetDeathCount()
+	if timeLost and timeLost > 0 and count and count > 0 then
+		frame:SetText(("%i (%i)"):format(timeLost, count))
+		frame:Show()
+	else
+		frame:Hide()
+	end
+end
 
 ---@param self Frame Scenario
 ---@param title string
@@ -128,7 +138,13 @@ local SetScenarioData = function(self, title, currentStage, numStages)
 		if(cmID) then
 			local _, _, _, texture = C_ChallengeMode.GetMapUIInfo(cmID);
 			header.ScenarioIcon:SetTexture(texture)
+
+			local affixScores, bestOverAllScore = C_MythicPlus.GetSeasonBestAffixScoreInfoForMap(cmID)
+			if affixScores then
+				header.TitleContainer.Score:SetText(("%i - %s"):format(affixScores.level, SecondsToTime(affixScores.durationSec)))
+			end
 		end
+
 
 		for i, affixID in ipairs(affixes) do
 			local affixName, affixDesc, affixTexture = C_ChallengeMode.GetAffixInfo(affixID);
@@ -192,6 +208,7 @@ local UnsetScenarioData = function(self)
 	header:SetHeight(1)
 	header.TitleContainer.Title:SetText('')
 	header.TitleContainer.Score:SetText('')
+	self.Timer.Bar.Wave:SetText('')
 	self.Timer.Bar.TimeLeft:SetTextColor(1, 1, 1)
 	header.ScenarioIcon:SetTexture(LINE_SCENARIO_ICON)
 	for i=1, 4 do
@@ -335,6 +352,8 @@ local UpdateChallengeMedals = function(self, elapsed)
 		bar:SetValue(timeLeft)
 	end
 
+	setScenarioDeathCount(bar.Wave)
+
 end
 
 ---@param self Frame Scenario.Timer
@@ -421,6 +440,8 @@ local RefreshScenarioObjective = function(self, event, ...)
 		elseif(event == "PROVING_GROUNDS_SCORE_UPDATE") then
 			local score = ...
 			self.Header.TitleContainer.Score:SetText(score)
+		elseif event == "CHALLENGE_MODE_DEATH_COUNT_UPDATED" then
+			setScenarioDeathCount(self.Timer.Bar.Wave)
 		elseif(event == "SCENARIO_COMPLETED" or event == 'SCENARIO_UPDATE' or event == 'SCENARIO_CRITERIA_UPDATE') then
 			if(event == "SCENARIO_COMPLETED") then
 				self.Timer:StopTimer()
@@ -593,7 +614,7 @@ function MOD:InitializeScenarios()
 	wave:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, -4);
 	wave:SetPoint("TOPRIGHT", bar, "TOPRIGHT", 0, -4);
 	wave:SetFontObject(SVUI_Font_Quest);
-	wave:SetJustifyH('LEFT')
+	wave:SetJustifyH('CENTER')
 	wave:SetTextColor(1,1,0)
 	wave:SetText('')
 
@@ -657,6 +678,7 @@ function MOD:InitializeScenarios()
 	self:RegisterEvent("CHALLENGE_MODE_START", self.UpdateScenarioObjective);
 	self:RegisterEvent("CHALLENGE_MODE_COMPLETED", self.UpdateScenarioObjective);
 	self:RegisterEvent("CHALLENGE_MODE_RESET", self.UpdateScenarioObjective);
+	self:RegisterEvent("CHALLENGE_MODE_DEATH_COUNT_UPDATED", self.UpdateScenarioObjective)
 
 	SV.Events:On("QUEST_UPVALUES_UPDATED", UpdateScenarioLocals, true);
 end
