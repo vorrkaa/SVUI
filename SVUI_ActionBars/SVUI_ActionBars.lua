@@ -1367,17 +1367,26 @@ do
 			if(isActive and (not restrictedAction)) then
 				button:SetChecked(true)
 				button:SetBackdropBorderColor(0.4, 0.8, 0)
-				if(IsPetAttackAction(i)) then PetActionButton_StartFlash(button) end
+				if(IsPetAttackAction(i)) then button:StartFlash() end
 			else
 				button:SetChecked(false)
 				button:SetBackdropBorderColor(0, 0, 0)
-				if(IsPetAttackAction(i)) then PetActionButton_StopFlash(button) end
+				if(IsPetAttackAction(i)) then button:StopFlash() end
 			end
 
 			local auto = _G[name.."AutoCastable"]
-			if(autoCastAllowed and auto) then auto:Show() else auto:Hide() end
+			if autoCastAllowed then
+				if auto then auto:Show() end
+			else
+				if auto then auto:Hide() end
+			end
+
 			local shine = _G[name.."Shine"]
-			if(autoCastEnabled and shine) then AutoCastShine_AutoCastStart(shine) else AutoCastShine_AutoCastStop(shine) end
+			if (autoCastEnabled and AutoCastShine_AutoCastStart) then
+				AutoCastShine_AutoCastStart(shine)
+			elseif AutoCastShine_AutoCastStop then
+				AutoCastShine_AutoCastStop(shine)
+			end
 
 			button:SetAlpha(1)
 
@@ -1426,9 +1435,9 @@ do
 		end
 		petBar:SetAttribute("_onstate-show", [[ if newstate == "hide" then self:Hide(); else self:Show(); end ]]);
 
-		if PetActionBarFrame then
-			PetActionBarFrame.showgrid = 1;
-			PetActionBar_ShowGrid();
+		--if PetActionBarFrame then
+		--	PetActionBarFrame.showgrid = 1;
+		--	PetActionBar_ShowGrid();
 			self:RefreshBar("Pet")
 
 			self:RegisterEvent("SPELLS_CHANGED", RefreshPet)
@@ -1436,14 +1445,19 @@ do
 			self:RegisterEvent("PLAYER_ENTERING_WORLD", RefreshPet)
 			self:RegisterEvent("PLAYER_CONTROL_LOST", RefreshPet)
 			self:RegisterEvent("PET_BAR_UPDATE", RefreshPet)
+			self:RegisterEvent("PET_BAR_UPDATE_USABLE", RefreshPet)
+			self:RegisterEvent("PET_UI_UPDATE", RefreshPet)
+			self:RegisterEvent("PLAYER_TARGET_CHANGED", RefreshPet)
+			self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED", RefreshPet)
 			self:RegisterEvent("UNIT_PET", RefreshPet)
 			self:RegisterEvent("UNIT_FLAGS", RefreshPet)
 			self:RegisterEvent("UNIT_AURA", RefreshPet)
 			self:RegisterEvent("PLAYER_FARSIGHT_FOCUS_CHANGED", RefreshPet)
-			self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN", PetActionBar_UpdateCooldowns)
+			self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN", RefreshPet)
+			--self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN", PetActionBar_UpdateCooldowns)
 	
 			SV:NewAnchor(petBar, L["Pet Bar"])
-		end
+		--end
 
 		self:UpdateBarBindings(true, false)
 	end
