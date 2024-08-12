@@ -54,6 +54,30 @@ local function ChallengesFrameStyle()
   hooksecurefunc(challengeFrame.WeeklyInfo, "SetUp", _hook_WeeklyInfo_SetUp )
   hooksecurefunc(challengeFrame, "Update", _hook_ChallengeFrame_Update)
 
+  local keystoneFrame = ChallengesKeystoneFrame
+  keystoneFrame:RemoveTextures(true)
+  keystoneFrame:SetStyle("Frame", "Window")
+  keystoneFrame:DisableDrawLayer("BACKGROUND")
+  keystoneFrame.TimeLimit:SetFontObject(SVUI_Font_Number)
+
+  SV.API:Set("CloseButton", keystoneFrame.CloseButton)
+  keystoneFrame.StartButton:SetStyle("Button")
+
+  hooksecurefunc(keystoneFrame, 'OnKeystoneSlotted', function(s)
+    local affix
+    for i=1, 4 do
+      affix = s.Affixes[i]
+      if not affix.skinned then
+        affix.Border:Die()
+        affix.Portrait:SetTexCoord(unpack(SVUI_ICON_COORDS))
+        affix.skinned = true
+      end
+      affix.Portrait:SetTexture(select(3, C_ChallengeMode.GetAffixInfo(affix.affixID)))
+    end
+  end)
+
+
+
   -- ChallengesFrameInset:RemoveTextures()
   -- ChallengesFrameInsetBg:Hide()
   -- ChallengesFrameDetails.bg:Hide()
