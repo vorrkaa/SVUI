@@ -168,6 +168,11 @@ do
 					deactivate(("PartyMemberFrame%d"):format(i))
 				end
 			end
+
+			for i = 1, MEMBERS_PER_RAID_GROUP do
+				deactivate('CompactPartyFrameMember' .. i)
+			end
+
 		elseif(unit:match("(arena)%d?$") == "arena") then
 			local id = unit:match("arena(%d)")
 			if(id) then
