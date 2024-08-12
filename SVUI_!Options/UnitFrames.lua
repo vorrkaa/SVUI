@@ -3413,6 +3413,12 @@ SV.Options.args[Schema] = {
 											desc = L["Show a incomming heal prediction bar on the unitframe. Also display a slightly different colored bar for incoming overheals."],
 											type = "toggle"
 										},
+										rangeCheck = {
+											type = "toggle",
+											order = 3,
+											name = L["Range Check"],
+											desc = L["Check if you are in range to cast spells on this specific unit."],
+										},
 										hideonnpc = {
 											type = "toggle",
 											order = 3,
