@@ -173,6 +173,8 @@ do
 				deactivate('CompactPartyFrameMember' .. i)
 			end
 
+			deactivate("CompactPartyFrame")
+
 		elseif(unit:match("(arena)%d?$") == "arena") then
 			local id = unit:match("arena(%d)")
 			if(id) then
