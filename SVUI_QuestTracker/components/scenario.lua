@@ -635,7 +635,7 @@ function MOD:InitializeScenarios()
 
 		medal = bar:CreateTexture(nil, "OVERLAY")
 		medal:SetSize(INNER_HEIGHT*1.5, INNER_HEIGHT*1.5)
-		medal:SetPoint("LEFT", spark, "RIGHT", -2, 0)
+		medal:SetPoint("LEFT", spark, "RIGHT", 2, 0)
 		medal:SetTexCoord(unpack(SVUI_ICON_COORDS))
 		medal:SetTexture(CHALLENGE_MEDAL_TEXTURES[4 - i]) --bronze is 1st index, we want gold as 1st ...
 
