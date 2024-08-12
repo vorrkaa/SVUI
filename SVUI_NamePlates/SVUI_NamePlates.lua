@@ -595,7 +595,7 @@ function DriverFrame:OnEvent(event, ...)
 		self:OnNamePlateCreated(namePlateFrameBase)
 	elseif event == "FORBIDDEN_NAME_PLATE_CREATED" then
 		local namePlateFrameBase = ...;
-		self:OnForbiddenNamePlateCreated(namePlateFrameBase);
+		--self:OnForbiddenNamePlateCreated(namePlateFrameBase);
 	elseif (event == 'NAME_PLATE_UNIT_ADDED') or event == "FORBIDDEN_NAME_PLATE_UNIT_ADDED" then
 		local namePlateUnitToken = ...
 		self:OnNamePlateAdded(namePlateUnitToken)
@@ -713,9 +713,11 @@ end
 
 function DriverFrame:OnNamePlateAdded(namePlateUnitToken)
 	local nameplate = C_NamePlate.GetNamePlateForUnit(namePlateUnitToken, issecure())
-	nameplate.UnitFrame:ApplyFrameOptions(namePlateUnitToken)
-	nameplate.UnitFrame:OnAdded(namePlateUnitToken)
-	nameplate.UnitFrame:UpdateAllElements()
+	if nameplate and nameplate.UnitFrame then
+		nameplate.UnitFrame:ApplyFrameOptions(namePlateUnitToken)
+		nameplate.UnitFrame:OnAdded(namePlateUnitToken)
+		nameplate.UnitFrame:UpdateAllElements()
+	end
 
 	self:UpdateClassResourceBar()
 	self:UpdateManaBar()
@@ -724,17 +726,15 @@ end
 
 function DriverFrame:OnNamePlateRemoved(namePlateUnitToken)
 	local nameplate = C_NamePlate.GetNamePlateForUnit(namePlateUnitToken, issecure())
-	-- if nameplate.UnitFrame then
+	if nameplate and nameplate.UnitFrame then
 		nameplate.UnitFrame:OnAdded(nil)
-	-- end
+	end
 end
 
 function DriverFrame:OnTargetChanged()
 	local nameplate = C_NamePlate.GetNamePlateForUnit('target', issecure())
-	if nameplate then
-		if nameplate.UnitFrame then
+	if nameplate and nameplate.UnitFrame then
 			nameplate.UnitFrame:OnUnitAuraUpdate()
-		end
 	end
 
 	self:UpdateClassResourceBar()
