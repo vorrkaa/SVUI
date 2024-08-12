@@ -29,7 +29,7 @@ CHAT BUBBLES
 function MOD:LoadChatBubbles()
 	local inInstance, instanceType = IsInInstance();
     local cmap = C_Map.GetBestMapForUnit("player")
-    local position = C_Map.GetPlayerMapPosition(cmap, "player");
+    local position = C_Map.GetPlayerMapPosition(cmap, "player") or { x=0, y=0 }
     local posX = position.x
     local posY = position.y
 	if (posX == 0 and posY == 0) or inInstance then
