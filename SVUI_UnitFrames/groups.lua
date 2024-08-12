@@ -395,6 +395,7 @@ BuildTemplates["party"] = function(self, unit)
         self.RaidTargetIndicator = MOD:CreateRaidIcon(self)
         self.ReadyCheckIndicator = MOD:CreateReadyCheckIcon(self)
         self.HealPrediction = MOD:CreateHealPrediction(self)
+        self.Range = { insideAlpha = 1, outsideAlpha = 1 }
         self.TargetGlow = self.Threat
         tinsert(self.__elements, UpdateTargetGlow)
         self:RegisterEvent("PLAYER_TARGET_CHANGED", UpdateTargetGlow)
@@ -496,6 +497,7 @@ BuildTemplates["raid"] = function(self, unit)
     self.RaidTargetIndicator = MOD:CreateRaidIcon(self)
     self.ReadyCheckIndicator = MOD:CreateReadyCheckIcon(self)
     self.HealPrediction = MOD:CreateHealPrediction(self)
+    self.Range = { insideAlpha = 1, outsideAlpha = 1 }
     -- self.Range = { insideAlpha = 1, outsideAlpha = 1 }
 
     self.Restrict = RestrictElement
@@ -568,6 +570,7 @@ BuildTemplates["raidpet"] = function(self, unit)
     self.RaidDebuffs = MOD:CreateRaidDebuffs(self)
     self.Afflicted = MOD:CreateAfflicted(self)
     self.RaidTargetIndicator = MOD:CreateRaidIcon(self)
+    self.Range = { insideAlpha = 1, outsideAlpha = 1 }
     -- self.Range = { insideAlpha = 1, outsideAlpha = 1 }
 
     self.Restrict = RestrictElement
