@@ -294,7 +294,7 @@ local function UpdateMiniMapCoords()
 	local cmap = C_Map.GetBestMapForUnit("player")
 	if not cmap then return end
 
-    local position = C_Map.GetPlayerMapPosition(cmap, "player");
+    local position = C_Map.GetPlayerMapPosition(cmap, "player") or { x=0, y=0 }
     local playerX = position.x
     local playerY = position.y
 	if((playerX ~= 0 and playerY ~= 0)) then
@@ -331,7 +331,7 @@ local function UpdateWorldMapCoords()
     
 	if(WMP_XY_COORD) then
 		local cmap = C_Map.GetBestMapForUnit("player")
-	    local position = C_Map.GetPlayerMapPosition(cmap, "player");
+	    local position = C_Map.GetPlayerMapPosition(cmap, "player") or { x=0, y=0 }
         local playerX = position.x
         local playerY = position.y
 		if((playerX ~= 0 and playerY ~= 0)) then
@@ -572,7 +572,7 @@ local Tour_OnClick = function(self, btn)
 		local subZone = GetSubZoneText() or UNKNOWN;
 		local edit_box = ChatEdit_ChooseBoxForSend();
         local cmap = C_Map.GetBestMapForUnit("player")
-        local position = C_Map.GetPlayerMapPosition(cmap, "player");
+        local position = C_Map.GetPlayerMapPosition(cmap, "player") or { x=0, y=0 }
         local x = position.x
         local y = position.y
 

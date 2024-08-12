@@ -595,7 +595,7 @@ function DriverFrame:OnEvent(event, ...)
 		self:OnNamePlateCreated(namePlateFrameBase)
 	elseif event == "FORBIDDEN_NAME_PLATE_CREATED" then
 		local namePlateFrameBase = ...;
-		self:OnForbiddenNamePlateCreated(namePlateFrameBase);
+		--self:OnForbiddenNamePlateCreated(namePlateFrameBase);
 	elseif (event == 'NAME_PLATE_UNIT_ADDED') or event == "FORBIDDEN_NAME_PLATE_UNIT_ADDED" then
 		local namePlateUnitToken = ...
 		self:OnNamePlateAdded(namePlateUnitToken)
@@ -713,9 +713,11 @@ end
 
 function DriverFrame:OnNamePlateAdded(namePlateUnitToken)
 	local nameplate = C_NamePlate.GetNamePlateForUnit(namePlateUnitToken, issecure())
-	nameplate.UnitFrame:ApplyFrameOptions(namePlateUnitToken)
-	nameplate.UnitFrame:OnAdded(namePlateUnitToken)
-	nameplate.UnitFrame:UpdateAllElements()
+	if nameplate and nameplate.UnitFrame then
+		nameplate.UnitFrame:ApplyFrameOptions(namePlateUnitToken)
+		nameplate.UnitFrame:OnAdded(namePlateUnitToken)
+		nameplate.UnitFrame:UpdateAllElements()
+	end
 
 	self:UpdateClassResourceBar()
 	self:UpdateManaBar()
@@ -724,17 +726,15 @@ end
 
 function DriverFrame:OnNamePlateRemoved(namePlateUnitToken)
 	local nameplate = C_NamePlate.GetNamePlateForUnit(namePlateUnitToken, issecure())
-	-- if nameplate.UnitFrame then
+	if nameplate and nameplate.UnitFrame then
 		nameplate.UnitFrame:OnAdded(nil)
-	-- end
+	end
 end
 
 function DriverFrame:OnTargetChanged()
 	local nameplate = C_NamePlate.GetNamePlateForUnit('target', issecure())
-	if nameplate then
-		if nameplate.UnitFrame then
+	if nameplate and nameplate.UnitFrame then
 			nameplate.UnitFrame:OnUnitAuraUpdate()
-		end
 	end
 
 	self:UpdateClassResourceBar()
@@ -994,9 +994,7 @@ function UnitFrameMixin:Create(unitframe)
 	self.myHealAbsorbRightShadow:SetTexCoord(1, 0, 0, 1)
 	--
 	h.border = h:CreateTexture(nil, 'ARTWORK', nil, 2)
-	
 	MOD.CreatePlateBorder(h)
-
 	h.border:SetVertexColor(unpack(config.Colors.Frame))
 
 	self.level = h:CreateFontString(nil, 'OVERLAY',"SVUI_Font_NamePlate_Number")
@@ -1104,8 +1102,6 @@ function UnitFrameMixin:Create(unitframe)
 	self.aggroHighlight:SetAllPoints(h);
 	self.aggroHighlight:Hide()
 
- 	
-
 	self.hoverHighlight = h:CreateTexture(nil, 'ARTWORK', nil, 1)
 	self.hoverHighlight:SetTexture(SV.media.statusbar.default)
 	self.hoverHighlight:SetVertexColor(1, 1, 1, 0.25)
@@ -1115,9 +1111,9 @@ function UnitFrameMixin:Create(unitframe)
 	self.hoverHighlight:Hide()
 
 	self.selectionHighlight = h:CreateTexture(nil, 'ARTWORK', nil, 4)
-	self.selectionHighlight:SetTexture(MarkTex)
-	self.selectionHighlight:SetTexCoord(unpack(TexCoord))
-	self.selectionHighlight:SetAllPoints(h.border)
+	self.selectionHighlight:SetTexture("Interface\\RaidFrame\\Raid-FrameHighlights");
+	self.selectionHighlight:SetTexCoord(0.02, 0.543, 0.28906250, 0.56)
+	self.selectionHighlight:SetAllPoints(h)
 	self.selectionHighlight:SetBlendMode('ADD')
 	self.selectionHighlight:SetVertexColor(.8, .8, 1, .7)
 	self.selectionHighlight:Hide()
@@ -1143,8 +1139,6 @@ function UnitFrameMixin:Create(unitframe)
 	self.questText:SetPoint('CENTER', self.questIcon, 0, 0)
 	self.questText:SetShadowOffset(1, -1)
 	self.questText:SetTextColor(1,.82,0)
-
-
 
 end
 
@@ -1256,6 +1250,7 @@ end
 function UnitFrameMixin:OnEvent(event, ...)
 	local arg1, arg2, arg3, arg4 = ...
 	if ( event == 'PLAYER_TARGET_CHANGED' ) then
+		DevTool:AddData(self, "PLAYER_TARGET_CHANGED")
 		CompactUnitFrame_UpdateSelectionHighlight(self);
 		CompactUnitFrame_UpdateName(self);
 	elseif ( arg1 == self.unit or arg1 == self.displayedUnit ) then
