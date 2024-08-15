@@ -172,6 +172,16 @@ end
 _G.DebugThisFrame = function(arg)
     local outputString = " ";
     local mouseFoci = GetMouseFoci()
+
+    --[[
+        Add Specific debug for nameplate and use FrameInspect from Tercioo
+    ]]--
+    if C_NamePlate.GetNamePlateForUnit('target', issecure()) then
+        local plate = C_NamePlate.GetNamePlateForUnit('target', issecure())
+        if FrameInspect then
+            FrameInspect.Inspect(plate)
+        end
+    end
     if arg then
         arg = _G[arg] or (mouseFoci and mouseFoci[#mouseFoci] or nil)-- GetMouseFocus()
     else
