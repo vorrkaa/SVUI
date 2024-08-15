@@ -161,6 +161,8 @@ do
 			end
 		elseif(unit:match("(party)%d?$") == "party") then
 			local id = unit:match("party(%d)")
+
+			--Classic Party Frame
 			if(id) then
 				deactivate("PartyMemberFrame"..id)
 			else
@@ -169,10 +171,10 @@ do
 				end
 			end
 
+			--Raid Style for Party
 			for i = 1, MEMBERS_PER_RAID_GROUP do
 				deactivate('CompactPartyFrameMember' .. i)
 			end
-
 			deactivate("CompactPartyFrame")
 
 		elseif(unit:match("(arena)%d?$") == "arena") then
