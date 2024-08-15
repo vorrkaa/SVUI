@@ -233,21 +233,21 @@ end
 oUF_SVUI.Tags.Events["name:level"] = "UNIT_LEVEL PLAYER_LEVEL_UP PLAYER_FLAGS_CHANGED";
 oUF_SVUI.Tags.Events["name:grid"] = "UNIT_NAME_UPDATE";
 
-oUF_SVUI.Tags.Events["health:color"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
-oUF_SVUI.Tags.Events["health:deficit"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
-oUF_SVUI.Tags.Events["health:current"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
-oUF_SVUI.Tags.Events["health:curmax"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
-oUF_SVUI.Tags.Events["health:curpercent"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
-oUF_SVUI.Tags.Events["health:curmax-percent"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
-oUF_SVUI.Tags.Events["health:percent"] = "UNIT_MAXHEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:color"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:deficit"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:current"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:curmax"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:curpercent"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:curmax-percent"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
+oUF_SVUI.Tags.Events["health:percent"] = "UNIT_MAXHEALTH UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED";
 
-oUF_SVUI.Tags.Events["power:color"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
-oUF_SVUI.Tags.Events["power:deficit"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
-oUF_SVUI.Tags.Events["power:current"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
-oUF_SVUI.Tags.Events["power:curmax"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
-oUF_SVUI.Tags.Events["power:curpercent"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
-oUF_SVUI.Tags.Events["power:curmax-percent"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
-oUF_SVUI.Tags.Events["power:percent"] = "UNIT_POWER_FREQUENT UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:color"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:deficit"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:current"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:curmax"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:curpercent"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:curmax-percent"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
+oUF_SVUI.Tags.Events["power:percent"] = "UNIT_POWER_FREQUENT UNIT_POWER_UPDATE UNIT_MAXPOWER";
 
 oUF_SVUI.Tags.Events["absorbs"] = "UNIT_ABSORB_AMOUNT_CHANGED";
 oUF_SVUI.Tags.Events["incoming"] = "UNIT_HEAL_PREDICTION";
@@ -358,7 +358,14 @@ oUF_SVUI.Tags.Methods["health:current"] = function(f)local i = UnitIsDead(f)and 
 
 oUF_SVUI.Tags.Methods["health:curmax"] = function(f)local i = UnitIsDead(f)and DEAD or UnitIsGhost(f)and L["Ghost"]or not UnitIsConnected(f)and L["Offline"]if i then return i else return SetTagStyle("CURRENT_MAX", UnitHealth(f), UnitHealthMax(f))end end
 
-oUF_SVUI.Tags.Methods["health:curpercent"] = function(f)local i = UnitIsDead(f)and DEAD or UnitIsGhost(f)and L["Ghost"]or not UnitIsConnected(f)and L["Offline"]if i then return i else return SetTagStyle("CURRENT_PERCENT", UnitHealth(f), UnitHealthMax(f))end end
+oUF_SVUI.Tags.Methods["health:curpercent"] = function(f)
+	local i = UnitIsDead(f)and DEAD or UnitIsGhost(f)and L["Ghost"]or not UnitIsConnected(f)and L["Offline"]
+	if i then
+		return i
+	else
+		return SetTagStyle("CURRENT_PERCENT", UnitHealth(f), UnitHealthMax(f))
+	end
+end
 
 oUF_SVUI.Tags.Methods["health:curmax-percent"] = function(f)local i = UnitIsDead(f)and DEAD or UnitIsGhost(f)and L["Ghost"]or not UnitIsConnected(f)and L["Offline"]if i then return i else return SetTagStyle("CURRENT_MAX_PERCENT", UnitHealth(f), UnitHealthMax(f))end end
 
