@@ -1538,6 +1538,9 @@ local DockAlert_OnEvent = function(self, event)
 end
 
 local DockAlert_Activate = function(self, child, newHeight)
+	if InCombatLockdown() then
+		return
+	end
 	local fallbackHeight = SV.db.Dock.buttonSize or 22;
 	local size = newHeight or fallbackHeight;
 	self:SetHeight(size);
