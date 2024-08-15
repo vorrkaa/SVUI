@@ -1132,7 +1132,7 @@ local Core_HandleError = function(self, schema, action, catch)
 end
 
 function lib:NewCore(gfile, efile, pfile, mfile, sfile)
-    print ("NEW CORE")
+    --print ("NEW CORE")
     --meta assurance
     local mt = {};
     local old = getmetatable(CoreObject);
