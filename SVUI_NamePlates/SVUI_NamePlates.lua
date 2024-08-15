@@ -43,6 +43,7 @@ local SV = _G['SVUI'];
 local L = SV.L;
 local MOD = SV.NamePlates;
 if(not MOD) then return end;
+local Schema = MOD.Schema;
 
 local LSM = _G.LibStub("LibSharedMedia-3.0")
 
@@ -297,6 +298,60 @@ local NPComboColor={
 -- Utils
 --------
 
+local function TruncateString(value)
+	if value >= 1e9 then
+		return ("%.1fb"):format(value / 1e9):gsub("%.?0 + ([kmb])$", "%1")
+	elseif value >= 1e6 then
+		return ("%.1fm"):format(value / 1e6):gsub("%.?0 + ([kmb])$", "%1")
+	elseif value >= 1e3 or value <= -1e3 then
+		return ("%.1fk"):format(value / 1e3):gsub("%.?0 + ([kmb])$", "%1")
+	else
+		return value
+	end
+end
+
+local function fomatHealthText(unit)
+	local min, max = UnitHealth(unit), UnitHealthMax(unit)
+
+	local prct = min / max * 100
+	local result = ("%.1f"):format(prct)
+	result = ("%s - %s%%"):format(TruncateString(min), result)
+	result = result:gsub(".0%%", "%%")
+	return result
+end
+
+local function GetNPCColor(unit)
+	if not IsInInstance() then return end
+
+	local npcColorMapping = MOD.public.npcColorMapping
+	local unitName = UnitName(unit)
+	local dungeonName = GetInstanceInfo()
+
+	local color = (npcColorMapping[dungeonName] and npcColorMapping[dungeonName][unitName] and npcColorMapping[dungeonName][unitName].enable and npcColorMapping[dungeonName][unitName].color) or nil
+	if color then
+		return MOD:GetColor(color)
+	else
+		return nil
+	end
+end
+
+local function GetNPCTexture(unit)
+	if not IsInInstance() then
+		return config.StatusbarTexture
+	end
+
+	local npcColorMapping = MOD.public.npcColorMapping
+	local unitName = UnitName(unit)
+	local dungeonName = GetInstanceInfo()
+
+	local texture = (npcColorMapping[dungeonName] and npcColorMapping[dungeonName][unitName] and npcColorMapping[dungeonName][unitName].enable and npcColorMapping[dungeonName][unitName].texture) or nil
+	if texture then
+		return LSM:Fetch("statusbar", texture)
+	else
+		return config.StatusbarTexture
+	end
+end
+
 function MOD.GetPlateThreatReaction(plate)
 	if plate.aggroHighlight:IsShown() then
 		local r, g, b = plate.aggroHighlight:GetVertexColor()
@@ -358,6 +413,12 @@ function MOD.GetPlateReaction(plate)
 end
 
 function MOD.Colorize(plate)
+
+	local npcColor = GetNPCColor(plate.displayedUnit)
+	if npcColor then
+		plate.healthBar:SetStatusBarColor(npcColor:GetRGB())
+		return
+	end
 
 	local latestColor, scale = MOD.GetPlateReaction(plate);
 	local r,g,b
@@ -552,10 +613,52 @@ function MOD:UpdateLocals()
 
 end
 
+function MOD:InitialSetCVar()
+	SetCVar ("nameplateMinAlpha", 0.90135484)
+	SetCVar ("nameplateMinAlphaDistance", -10^5.2)
+	SetCVar ("nameplateSelectedAlpha", 1)
+	SetCVar ("nameplateNotSelectedAlpha", 1)
+	SetCVar ("nameplateShowFriendlyBuffs", 0)
+	SetCVar ("nameplateShowPersonalCooldowns", 0)
+	SetCVar ("nameplatePlayerMaxDistance", 60)
+	SetCVar ("nameplateShowAll", 1)
+	SetCVar ("showNamePlateLoseAggroFlash", 1)
+	SetCVar ("nameplateMinScale", 0.8)
+	SetCVar ("nameplateLargerScale", 1.10)
+	SetCVar ("nameplateShowEnemyMinions", 1)
+	SetCVar ("nameplateShowEnemyMinus", 1)
+	SetCVar ("nameplateShowFriendlyGuardians", 0)
+	SetCVar ("nameplateShowFriendlyPets", 0)
+	SetCVar ("nameplateShowFriendlyTotems", 0)
+	SetCVar ("nameplateShowFriendlyMinions", 0)
+	SetCVar ("nameplateOtherTopInset", 0.085)
+	SetCVar ("nameplateLargeTopInset", 0.085)
+	SetCVar ("clampTargetNameplateToScreen", 1)
+	SetCVar ("nameplateTargetRadialPosition", 1)
+	SetCVar ("nameplateTargetBehindMaxDistance", 30)
+	SetCVar ("namePlateHorizontalScale", 1)
+	SetCVar ("namePlateVerticalScale", 1)
+	SetCVar ("namePlateClassificationScale", 1)
+	SetCVar ("nameplateSelectedScale", 1.15)
+	SetCVar ("nameplateMotionSpeed", 0.025)
+	SetCVar ("nameplatePersonalHideDelaySeconds", 0.2)
+	SetCVar ("nameplateShowDebuffsOnFriendly", 0)
+	SetCVar ("nameplateMaxDistance", 60)
+
+	SetCVar ("nameplateOverlapV", 1.6)
+	SetCVar ("nameplateOverlapH", 0.8)
+	SetCVar ("nameplateGlobalScale", 1)
+	SetCVar ("nameplateShowEnemyTotems", 1)
+	SetCVar ("nameplateShowEnemyPets", 0)
+
+end
+
 function MOD:Load() 
 	self:UpdateLocals();
 	DriverFrame:SetScript('OnEvent', DriverFrame.OnEvent)
 	DriverFrame:RegisterEvent'PLAYER_ENTERING_WORLD'
+
+	MOD:EnableDungeonScanner()
 end
 -------
 --  DriverFrame
@@ -680,7 +783,8 @@ function DriverFrame:OnLoad()
 end
 
 function DriverFrame:UpdateNamePlateOptions()
-	self.baseNamePlateWidth = 110;
+	--self.baseNamePlateWidth = 110;
+	self.baseNamePlateWidth = SV.db[Schema].healthBar.width or 110
 	self.baseNamePlateHeight = 45;
 
 	local namePlateVerticalScale = tonumber(GetCVar("NamePlateVerticalScale"));
@@ -693,6 +797,7 @@ function DriverFrame:UpdateNamePlateOptions()
 	for i, frame in ipairs(C_NamePlate.GetNamePlates()) do
 		frame.UnitFrame:ApplyFrameOptions(frame.UnitFrame.unit);
 		frame.UnitFrame:UpdateAllElements()
+		frame.UnitFrame:UpdateScale()
 	end
 
 	self:UpdateClassResourceBar()
@@ -729,12 +834,25 @@ function DriverFrame:OnNamePlateRemoved(namePlateUnitToken)
 	if nameplate and nameplate.UnitFrame then
 		nameplate.UnitFrame:OnAdded(nil)
 	end
+
+	if self.previousPlate == nameplate then
+		self.previousPlate.UnitFrame:UpdateScale(true)
+		self.previousPlate = nil
+	end
+
 end
 
 function DriverFrame:OnTargetChanged()
 	local nameplate = C_NamePlate.GetNamePlateForUnit('target', issecure())
+
+	if self.previousPlate and self.previousPlate.UnitFrame then
+		self.previousPlate.UnitFrame:UpdateScale()
+	end
+
 	if nameplate and nameplate.UnitFrame then
-			nameplate.UnitFrame:OnUnitAuraUpdate()
+		nameplate.UnitFrame:OnUnitAuraUpdate()
+		nameplate.UnitFrame:UpdateScale()
+		self.previousPlate = nameplate
 	end
 
 	self:UpdateClassResourceBar()
@@ -869,28 +987,47 @@ local comboBar = nil
 
 local _, myclass = UnitClass("player")
 if (myclass == "ROGUE") then
-	comboBar = ClassNameplateBarRogueFrame 
+	comboBar = ClassNameplateBarRogueFrame
+
+	if comboBar then
+		comboBar:SetSize(68, 1)
+		comboBar:SetFrameStrata("HIGH")
+		comboBar:SetFrameLevel(50) -- Make sure it's always on top, even over castBar...
+
+		DevTool:AddData(comboBar, "ClassNameplateBarRogueFrame")
+
+		for i = 1, #comboBar.classResourceButtonTable do
+			comboBar.classResourceButtonTable[i]:DisableDrawLayer("BACKGROUND")
+			comboBar.classResourceButtonTable[i].IconCharged:SetTexture(MOD.media.comboIcon)
+			comboBar.classResourceButtonTable[i].IconUncharged:SetTexture(MOD.media.comboIcon)
+			comboBar.classResourceButtonTable[i].IconCharged:SetSize(12, 12)
+			comboBar.classResourceButtonTable[i].IconUncharged:SetSize(12, 12)
+			comboBar.classResourceButtonTable[i].IconCharged:SetVertexColor(unpack(NPComboColor[i]))
+			comboBar.classResourceButtonTable[i]:SetFrameLevel(49)
+		end
+	end
 elseif (myclass=="DRUID") then
 	comboBar=ClassNameplateBarFeralDruidFrame
-end
-if comboBar then
-	comboBar:SetSize(68, 1)
-	comboBar:SetFrameStrata("HIGH")
-	comboBar:SetFrameLevel(50) -- Make sure it's always on top, even over castBar...
 
-	for i = 1, #comboBar.classResourceButtonTable do
-		comboBar.classResourceButtonTable[i]:DisableDrawLayer("BACKGROUND")
-		comboBar.classResourceButtonTable[i].Point_Icon:SetTexture(MOD.media.comboIcon)
-		comboBar.classResourceButtonTable[i].Point_Deplete:SetTexture(MOD.media.comboIcon)
-		comboBar.classResourceButtonTable[i].Point_Icon:SetSize(12, 12)
-		comboBar.classResourceButtonTable[i].Point_Deplete:SetSize(12, 12)
-		comboBar.classResourceButtonTable[i].Point_Icon:SetVertexColor(unpack(NPComboColor[i]))
-		-- comboBar.classResourceButtonTable[i].Background:SetTexture(nil)
-		-- comboBar.classResourceButtonTable[i].Point:SetTexture(MOD.media.comboIcon)
-		-- comboBar.classResourceButtonTable[i].Point:SetSize(12, 12)
-		-- comboBar.classResourceButtonTable[i].Point:SetVertexColor(unpack(NPComboColor[i]))
-		comboBar.classResourceButtonTable[i]:SetFrameLevel(49)
-	end	
+	if comboBar then
+		comboBar:SetSize(68, 1)
+		comboBar:SetFrameStrata("HIGH")
+		comboBar:SetFrameLevel(50) -- Make sure it's always on top, even over castBar...
+
+		for i = 1, #comboBar.classResourceButtonTable do
+			comboBar.classResourceButtonTable[i]:DisableDrawLayer("BACKGROUND")
+			comboBar.classResourceButtonTable[i].Point_Icon:SetTexture(MOD.media.comboIcon)
+			comboBar.classResourceButtonTable[i].Point_Deplete:SetTexture(MOD.media.comboIcon)
+			comboBar.classResourceButtonTable[i].Point_Icon:SetSize(12, 12)
+			comboBar.classResourceButtonTable[i].Point_Deplete:SetSize(12, 12)
+			comboBar.classResourceButtonTable[i].Point_Icon:SetVertexColor(unpack(NPComboColor[i]))
+			-- comboBar.classResourceButtonTable[i].Background:SetTexture(nil)
+			-- comboBar.classResourceButtonTable[i].Point:SetTexture(MOD.media.comboIcon)
+			-- comboBar.classResourceButtonTable[i].Point:SetSize(12, 12)
+			-- comboBar.classResourceButtonTable[i].Point:SetVertexColor(unpack(NPComboColor[i]))
+			comboBar.classResourceButtonTable[i]:SetFrameLevel(49)
+		end
+	end
 end
 
 function DriverFrame:UpdateComboPointsBar()
@@ -982,7 +1119,7 @@ function UnitFrameMixin:Create(unitframe)
 	self.totalAbsorbOverlay:SetTexture([[Interface\RaidFrame\Shield-Overlay]], true, true);	--Tile both vertically and horizontally
 	self.totalAbsorbOverlay:SetAllPoints(self.totalAbsorb);
 	self.totalAbsorbOverlay.tileSize = 20;
-	--
+
 	self.myHealAbsorb = h:CreateTexture(nil, 'ARTWORK', nil, 1)
 	self.myHealAbsorb:SetTexture([[Interface\RaidFrame\Absorb-Fill]], true, true)
 
@@ -992,14 +1129,20 @@ function UnitFrameMixin:Create(unitframe)
 	self.myHealAbsorbRightShadow = h:CreateTexture(nil, 'ARTWORK', nil, 1)
 	self.myHealAbsorbRightShadow:SetTexture[[Interface\RaidFrame\Absorb-Edge]]
 	self.myHealAbsorbRightShadow:SetTexCoord(1, 0, 0, 1)
-	--
+
 	h.border = h:CreateTexture(nil, 'ARTWORK', nil, 2)
 	MOD.CreatePlateBorder(h)
 	h.border:SetVertexColor(unpack(config.Colors.Frame))
 
 	self.level = h:CreateFontString(nil, 'OVERLAY',"SVUI_Font_NamePlate_Number")
-	self.level:SetPoint("RIGHT", h, "RIGHT", 2, 0)
+	self.level:SetPoint("RIGHT", h, "RIGHT", -2, 0)
 	self.level:SetJustifyH("RIGHT")
+
+	self.healthText = h:CreateFontString(nil, 'OVERLAY',"SVUI_Font_NamePlate_Number")
+	self.healthText:SetPoint("LEFT", h, "LEFT", 2, 0)
+	--self.healthText:SetFontObject(SVUI_Font_Number)
+	self.healthText:SetJustifyH("LEFT")
+	self.healthText:SetJustifyV("MIDDLE")
 	
 	--
 	self.overAbsorbGlow = h:CreateTexture(nil, 'ARTWORK', nil, 3)
@@ -1118,7 +1261,7 @@ function UnitFrameMixin:Create(unitframe)
 	self.selectionHighlight:SetVertexColor(.8, .8, 1, .7)
 	self.selectionHighlight:Hide()
 
-	self.BuffFrame = CreateFrame('StatusBar', '$parentBuffFrame', self, 'HorizontalLayoutFrame')
+	self.BuffFrame = CreateFrame('Frame', '$parentBuffFrame', self, 'HorizontalLayoutFrame')
 	Mixin(self.BuffFrame, NameplateBuffContainerMixin)
 	self.BuffFrame:SetPoint('LEFT', self.healthBar, -1, 0)
 	self.BuffFrame.spacing = 4
@@ -1127,6 +1270,7 @@ function UnitFrameMixin:Create(unitframe)
 	-- self.BuffFrame:SetScript('OnUpdate', self.BuffFrame.OnUpdate)
 	self.BuffFrame.UpdateAnchor = _hook_NameplateBuffContainerMixin_UpdateAnchor
 	self.BuffFrame:OnLoad()
+	self.BuffFrame:SetTargetYOffset(10)
 
 	-- Quest
 	self.questIcon = self:CreateTexture(nil, nil, nil, 0)
@@ -1227,7 +1371,6 @@ function UnitFrameMixin:UnregisterEvents()
 	self:SetScript('OnEvent', nil)
 end
 
-
 function UnitFrameMixin:UpdateAllElements()
 	self:UpdateInVehicle()
 
@@ -1244,13 +1387,14 @@ function UnitFrameMixin:UpdateAllElements()
 		self:OnUnitAuraUpdate()
 		self:UpdateQuestVisuals()
 		self:UpdateStatusBar()
+
+		self.healthText:SetText(fomatHealthText(self.displayedUnit))
 	end
 end
 
 function UnitFrameMixin:OnEvent(event, ...)
 	local arg1, arg2, arg3, arg4 = ...
 	if ( event == 'PLAYER_TARGET_CHANGED' ) then
-		DevTool:AddData(self, "PLAYER_TARGET_CHANGED")
 		CompactUnitFrame_UpdateSelectionHighlight(self);
 		CompactUnitFrame_UpdateName(self);
 	elseif ( arg1 == self.unit or arg1 == self.displayedUnit ) then
@@ -1258,9 +1402,13 @@ function UnitFrameMixin:OnEvent(event, ...)
 			CompactUnitFrame_UpdateMaxHealth(self)
 			CompactUnitFrame_UpdateHealth(self)
 			CompactUnitFrame_UpdateHealPrediction(self)
+
+			self.healthText:SetText(fomatHealthText(self.displayedUnit))
 		elseif ( event == 'UNIT_HEALTH' ) then
 			CompactUnitFrame_UpdateHealth(self)
 			CompactUnitFrame_UpdateHealPrediction(self)
+
+			self.healthText:SetText(fomatHealthText(self.displayedUnit))
 		elseif ( event == 'UNIT_NAME_UPDATE' ) then
 			CompactUnitFrame_UpdateName(self)
 			CompactUnitFrame_UpdateHealthColor(self)
@@ -1340,7 +1488,6 @@ function UnitFrameMixin:UpdateThreat()
 end
 
 function UnitFrameMixin:UpdateStatusBar()
-	self.healthBar:SetStatusBarTexture(config.StatusbarTexture, 'BACKGROUND', 1)
 	self.castBar:SetStatusBarTexture(config.StatusbarTexture, 'BACKGROUND', 1)
 	if not UnitIsUnit(self.displayedUnit,'player') then 
 		if UnitLevel(self.displayedUnit) == -1 then
@@ -1355,9 +1502,11 @@ function UnitFrameMixin:UpdateStatusBar()
 			self.healthBar.eliteborder:Hide() 
 		end
 		MOD.Colorize(self)
+		self.healthBar:SetStatusBarTexture(GetNPCTexture(self.displayedUnit), 'BACKGROUND', 1)
 	else
 		self.level:SetText(nil)
-		self.healthBar.eliteborder:Hide() 
+		self.healthBar.eliteborder:Hide()
+		self.healthBar:SetStatusBarTexture(config.StatusbarTexture, 'BACKGROUND', 1)
 	end
 end
 
@@ -1373,6 +1522,14 @@ function UnitFrameMixin:UpdateQuestVisuals()
 	else
 		self.questText:SetText(nil)
 		self.questIcon:Hide()
+	end
+end
+
+function UnitFrameMixin:UpdateScale(reset)
+	if reset or not UnitIsUnit(self.displayedUnit, 'target') then
+		self.healthBar:SetScale(SV.db[Schema].targetScale.base or 1)
+	else
+		self.healthBar:SetScale(SV.db[Schema].targetScale.target)
 	end
 end
 

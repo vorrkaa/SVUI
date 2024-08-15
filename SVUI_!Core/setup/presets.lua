@@ -1088,6 +1088,16 @@ local function LoadPageData()
 		},
 		--PAGE 9
 		{
+			["REQUIRED"] = "NamePlates",
+
+			["Desc1"] = L["Whether you want to or not, you will be fighting other villains, you can look at their doings-of-evil or inform you about the MANY abilities of Chuck Norris"],
+			["Desc2"] = L["The nameplate function the same as standard nameplates. Clickity-click to setup your nameplates."],
+			["Desc3"] = L["CHOOSE_OR_DIE"],
+
+			["Option1"] = {L["Nameplates"], "NamePlatesConfigs"},
+		},
+		--PAGE 10
+		{
 			["SubTitle"] = BASIC_OPTIONS_TOOLTIP..CONTINUED..AUCTION_TIME_LEFT0,
 
 			["Desc1"] = L["Thats it! All done! Now we just need to hand these choices off to the henchmen so they can get you ready to (..insert evil tasks here..)!"],

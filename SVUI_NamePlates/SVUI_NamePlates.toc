@@ -3,6 +3,8 @@
 ## Version: 2.1.0
 ## Title: |cffFF9900SuperVillain UI: |r|cffFFEF00NamePlates|r
 ## Notes: NamePlates Plugin for [|cff9911FFSVUI|r].
+## SavedVariables: SVUI_Public_Nameplates
+## SavedVariablesPerCharacter: SVUI_Private_Nameplates
 ## OptionalDeps: LibSharedMedia-3.0
 ## RequiredDeps: SVUI_!Core
 ## X-SVUIName: NamePlates
