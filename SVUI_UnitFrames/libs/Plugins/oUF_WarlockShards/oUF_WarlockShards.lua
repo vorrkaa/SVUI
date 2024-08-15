@@ -41,8 +41,10 @@ local Update = function(self, event, unit, powerType)
 
 	if spec then
 		local colors = shardColor[spec]
-		local numShards = UnitPower("player", Enum.PowerType.SoulShards);
-		bar.MaxCount = UnitPowerMax("player", Enum.PowerType.SoulShards);
+		-- we need to get the unmodified value sinon Ember are not 0 or 1 but between 0 and 10
+		local numShards = UnitPower("player", Enum.PowerType.SoulShards, true) * 0.1
+
+		bar.MaxCount = UnitPowerMax("player", Enum.PowerType.SoulShards)
 
 		if not bar:IsShown() then
 			bar:Show()
@@ -59,7 +61,8 @@ local Update = function(self, event, unit, powerType)
 				bar[i]:Show()
 				bar[i]:SetStatusBarColor(unpack(colors))
 				bar[i]:SetMinMaxValues(0, 1)
-				local filled = (i <= numShards) and 1 or 0
+				--ternary to manage ember
+				local filled = ((i <= numShards) and 1) or (abs(numShards-i)<1 and (numShards-i+1)) or 0
 				bar[i]:SetValue(filled)
 				if(bar[i].Update) then
 					bar[i]:Update(filled)
