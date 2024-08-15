@@ -230,7 +230,7 @@ function GetRelicItemLevel(itemLink)
 	-- make sure the linked item is a weapon, otherwise weird things happen
 	local itemName, _, _, iLevelInfo, _, itemType, itemSubType, _, _, _, _ = GetItemInfo(itemLink)
 	local attuned = 0;
-	
+
 	if (checkName == itemName) or (checkAltName == itemName) then
 		for i=1, 3 do
 			isAttuned, canAttune = true, true;
@@ -239,7 +239,7 @@ function GetRelicItemLevel(itemLink)
 			end
 		end
 	end
-	
+
 	return attuned;
 end
 
@@ -272,7 +272,7 @@ function SV:SetGearLabels(frame, bagID, slotID, itemLink, quality, equipSlot)
 			end
 		end
 	end
-	
+
 	if(frame.ItemLevel) then
         local iLevel = SV:GetItemLevel(itemLink)
 		local itemName, _, _, iLevelInfo, _, _, itemSubType, _, _, _, _
@@ -374,7 +374,7 @@ local function RefreshInspectedGear()
 	local unit = InspectFrame and InspectFrame.unit or "player";
 	if(not unit or (unit and not CanInspect(unit,false))) then return end
 
-  SV:ParseGearSlots(unit, true, true)
+  	SV:ParseGearSlots(unit, true, true)
 end
 
 local function UpdateLocals()
@@ -394,14 +394,14 @@ function SV:BuildEquipmentMap()
 	for key, gearData in pairs(GEARSET_LISTING) do
 		twipe(gearData);
 	end
-	
+
 	if (not C_EquipmentSet.GetNumEquipmentSets()) then
 		return
 	end
-	
+
 	local name, player, bank, bags, slotIndex, bagIndex, loc, _;
 	local equipmentSetIDs = C_EquipmentSet.GetEquipmentSetIDs();
-	
+
 	for i = 1, C_EquipmentSet.GetNumEquipmentSets() do
 		name = C_EquipmentSet.GetEquipmentSetInfo(equipmentSetIDs[i]);
 		local equipmentSetID = C_EquipmentSet.GetEquipmentSetID(name);
@@ -427,7 +427,7 @@ function SV:UpdateGearInfo()
 		return
 	end
 	UpdateLocals()
-  SV:ParseGearSlots("player", false, true, true)
+  	SV:ParseGearSlots("player", false, true, true)
 end
 
 local Gear_UpdateTabs = function()
@@ -492,7 +492,7 @@ local function InitializeGearInfo()
 	LoadAddOn("Blizzard_InspectUI")
 	SetDisplayStats("Character")
 	SetDisplayStats("Inspect")
-  
+
 	GearHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
 	GearHandler:RegisterEvent("UPDATE_INVENTORY_DURABILITY")
 	GearHandler:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")

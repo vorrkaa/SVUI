@@ -28,6 +28,22 @@ local MacroButtonList2 = {
 MACRO UI MODR
 ##########################################################
 ]]--
+
+local function styleMacroButton(button)
+	if not button.skinned then
+		local bg = button:GetRegions()
+		bg:Die()
+		button:SetStyle("ActionSlot")
+		local icon = button.Icon
+
+		icon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
+		icon:InsetPoints()
+		icon:SetDrawLayer("OVERLAY")
+
+		button.skinned = true
+	end
+end
+
 local function MacroUIStyle()
 	if SV.db.Skins.blizzard.enable ~= true or SV.db.Skins.blizzard.macro ~= true then return end
 	
@@ -38,6 +54,15 @@ local function MacroUIStyle()
 	SV.API:Set("ScrollBar", MacroButtonScrollFrame)
 	SV.API:Set("ScrollBar", MacroFrameScrollFrame)
 	SV.API:Set("ScrollBar", MacroPopupScrollFrame)
+
+	--Useless while blizzard didn't change how they show the title in macroframe...
+	MacroFrame.TitleContainer.TitleText:SetFontObject(SVUI_Font_Header)
+	--until it's done, we rely on this crappy code...
+	for i, region in ipairs({ MacroFrame:GetRegions() }) do
+		if region:IsObjectType("FontString") and region:GetName() == nil then
+			region:SetFontObject(SVUI_Font_Header)
+		end
+	end
 
 	MacroFrame:SetWidth(360)
 
@@ -71,28 +96,53 @@ local function MacroUIStyle()
 		end
 	end 
 
-	MacroFrameText:SetFont(SV.media.font.default, 12, "NONE")
+	MacroFrameText:SetFont(SV.media.font.default, 12, "")
 	MacroFrameTextBackground:RemoveTextures()
-	MacroFrameTextBackground:SetStyle("Frame", 'Transparent')
+	MacroFrameTextBackground:SetStyle("Frame", 'Pattern2')
 
 	MacroPopupFrame:RemoveTextures()
 	MacroPopupFrame:SetStyle("Frame", 'Transparent')
 	MacroPopupFrame.BorderBox:RemoveTextures()
 	SV.API:Set("EditBox", MacroPopupEditBox)
-	MacroPopupScrollFrameScrollBar:RemoveTextures()
+	--MacroPopupFrame.IconSelector.ScrollBar:RemoveTextures()
+	--MacroPopupFrame.IconSelector.ScrollBox:RemoveTextures()
+	MacroPopupFrame.IconSelector:SetStyle("ScrollBar", "Pattern")
+	--MacroPopupScrollFrameScrollBar:RemoveTextures()
 	--MacroPopupScrollFrameScrollBar:SetStyle("ScrollBar", "Pattern")
 	--MacroPopupScrollFrameScrollBar.Panel:SetPoint("TOPLEFT", 51, 2)
 	--MacroPopupScrollFrameScrollBar.Panel:SetPoint("BOTTOMRIGHT", -4, 4)
 	--MacroPopupEditBox:SetStyle("Editbox")
-	MacroPopupNameLeft:SetTexture("")
-	MacroPopupNameMiddle:SetTexture("")
-	MacroPopupNameRight:SetTexture("")
+	MacroPopupFrame.BorderBox.IconSelectorEditBox:RemoveTextures()
+	MacroPopupFrame.BorderBox.IconSelectorEditBox:SetStyle("EditBox")
+
+	--MacroPopupNameLeft:SetTexture("")
+	--MacroPopupNameMiddle:SetTexture("")
+	--MacroPopupNameRight:SetTexture("")
 	MacroPopupFrame.BorderBox.CancelButton:SetPoint("BOTTOM", MacroPopupFrame, "BOTTOMLEFT", 0, -25)
+	MacroPopupFrame.BorderBox.CancelButton:SetStyle("Button")
+	MacroPopupFrame.BorderBox.OkayButton:SetStyle("Button")
+
+	MacroPopupFrame.BorderBox.SelectedIconArea.SelectedIconButton:RemoveTextures()
+	MacroPopupFrame.BorderBox.SelectedIconArea.SelectedIconButton.Icon:SetTexCoord(unpack(SVUI_ICON_COORDS))
 	MacroFrameInset:Die()
 
-	MacroButtonContainer:RemoveTextures()
-	SV.API:Set("ScrollBar", MacroButtonScrollFrame)
-	MacroButtonScrollFrameScrollBar:SetStyle("Frame", "Inset")
+
+
+	hooksecurefunc(MacroPopupFrame, "Update", function(f)
+		for button in f.IconSelector:EnumerateButtons() do
+			styleMacroButton(button)
+		end
+	end)
+
+	hooksecurefunc(MacroFrame, "UpdateButtons", function(f)
+		for button in f.MacroSelector:EnumerateButtons() do
+			styleMacroButton(button)
+		end
+	end)
+
+	--MacroButtonContainer:RemoveTextures()
+	--SV.API:Set("ScrollBar", MacroButtonScrollFrame)
+	--MacroButtonScrollFrameScrollBar:SetStyle("Frame", "Inset")
 
 	MacroPopupFrame:HookScript("OnShow", function(c)
 		c:ClearAllPoints()
@@ -102,8 +152,8 @@ local function MacroUIStyle()
 	MacroFrameSelectedMacroButton:SetFrameStrata(bStrata)
 	MacroFrameSelectedMacroButton:RemoveTextures()
 	MacroFrameSelectedMacroButton:SetStyle("ActionSlot")
-	MacroFrameSelectedMacroButtonIcon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
-	MacroFrameSelectedMacroButtonIcon:InsetPoints()
+	MacroFrameSelectedMacroButton.Icon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
+	MacroFrameSelectedMacroButton.Icon:InsetPoints()
 
 	MacroEditButton:ClearAllPoints()
 	MacroEditButton:SetPoint("BOTTOMLEFT", MacroFrameSelectedMacroButton.Panel, "BOTTOMRIGHT", 10, 0)
@@ -111,33 +161,6 @@ local function MacroUIStyle()
 	MacroFrameCharLimitText:ClearAllPoints()
 	MacroFrameCharLimitText:SetPoint("BOTTOM", MacroFrameTextBackground, -25, -35)
 
-	for i = 1, MAX_ACCOUNT_MACROS do 
-		local button = _G["MacroButton"..i]
-		if(button) then
-			button:RemoveTextures()
-			button:SetStyle("ActionSlot")
-
-			local icon = _G["MacroButton"..i.."Icon"]
-			if(icon) then
-				icon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
-				icon:InsetPoints()
-				icon:SetDrawLayer("OVERLAY")
-			end
-
-			local popup = _G["MacroPopupButton"..i]
-			if(popup) then
-				popup:RemoveTextures()
-				popup:SetStyle("Button")
-				popup:SetBackdropColor(0, 0, 0, 0)
-
-				local popupIcon = _G["MacroPopupButton"..i.."Icon"]
-				if(popupIcon) then
-					popupIcon:InsetPoints()
-					popupIcon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
-				end
-			end 
-		end  
-	end 
 end 
 
 --[[ 
