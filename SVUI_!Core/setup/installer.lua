@@ -267,6 +267,14 @@ function SV.Setup:UserScreen(rez, preserve)
 	end
 end
 
+function SV.Setup:NamePlatesConfigs()
+	if (SV.NamePlates) then
+		SV.NamePlates:InitialSetCVar()
+	else
+		--DevTool:AddData(SV, "NamePlatesConfigs not ready")
+	end
+end
+
 function SV.Setup:ChatConfigs(mungs)
 	forceCVars()
 

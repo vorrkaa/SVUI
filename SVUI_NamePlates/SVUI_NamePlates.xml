@@ -120,5 +120,6 @@
 
     <Script file="Loader.lua"/>
     <Script file='SVUI_NamePlates.lua'/>
+     <Script file='components\scanner.lua'/>
     <!-- <Script file='components\healers.lua'/> -->
 </Ui>
