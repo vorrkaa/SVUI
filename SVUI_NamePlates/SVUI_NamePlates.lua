@@ -310,14 +310,39 @@ local function TruncateString(value)
 	end
 end
 
-local function fomatHealthText(unit)
-	local min, max = UnitHealth(unit), UnitHealthMax(unit)
-
-	local prct = min / max * 100
-	local result = ("%.1f"):format(prct)
-	result = ("%s - %s%%"):format(TruncateString(min), result)
-	result = result:gsub(".0%%", "%%")
-	return result
+local function SetTagStyle(style, min, max)
+	if max == 0 then max = 1 end
+	local result;
+	if style == "DEFICIT" then
+		local result = max - min;
+		if result <= 0 then
+			return ""
+		else
+			return ("-%s"):format(TruncateString(result))
+		end
+	elseif style == "PERCENT" then
+		local prct = min / max * 100
+		result = ("%.1f"):format(prct)
+		result = ("%s%%"):format(result)
+		result = result:gsub(".0%%", "%%")
+		return result
+	elseif style == "CURRENT" or ((style == "CURRENT_MAX" or style == "CURRENT_MAX_PERCENT" or style == "CURRENT_PERCENT") and min == max) then
+		return ("%s"):format(TruncateString(min))
+	elseif style == "CURRENT_MAX" then
+		return ("%s - %s"):format(TruncateString(min), TruncateString(max))
+	elseif style == "CURRENT_PERCENT" then
+		local prct = min / max * 100
+		result = ("%.1f"):format(prct)
+		result = ("%s - %s%%"):format(TruncateString(min), result)
+		result = result:gsub(".0%%", "%%")
+		return result
+	elseif style == "CURRENT_MAX_PERCENT" then
+		local prct = min / max * 100
+		result = ("%.1f"):format(prct)
+		result = ("%s - %s - %s%%"):format(TruncateString(min), TruncateString(max), result)
+		result = result:gsub(".0%%", "%%")
+		return result
+	end
 end
 
 local function GetNPCColor(unit)
@@ -617,7 +642,6 @@ function MOD:InitialSetCVar()
 	SetCVar ("nameplateMinAlpha", 0.90135484)
 	SetCVar ("nameplateMinAlphaDistance", -10^5.2)
 	SetCVar ("nameplateSelectedAlpha", 1)
-	SetCVar ("nameplateNotSelectedAlpha", 1)
 	SetCVar ("nameplateShowFriendlyBuffs", 0)
 	SetCVar ("nameplateShowPersonalCooldowns", 0)
 	SetCVar ("nameplatePlayerMaxDistance", 60)
@@ -646,7 +670,7 @@ function MOD:InitialSetCVar()
 	SetCVar ("nameplateMaxDistance", 60)
 
 	SetCVar ("nameplateOverlapV", 1.6)
-	SetCVar ("nameplateOverlapH", 0.8)
+	SetCVar ("nameplateOverlapH", 1)
 	SetCVar ("nameplateGlobalScale", 1)
 	SetCVar ("nameplateShowEnemyTotems", 1)
 	SetCVar ("nameplateShowEnemyPets", 0)
@@ -658,7 +682,11 @@ function MOD:Load()
 	DriverFrame:SetScript('OnEvent', DriverFrame.OnEvent)
 	DriverFrame:RegisterEvent'PLAYER_ENTERING_WORLD'
 
-	MOD:EnableDungeonScanner()
+	SV:AddSlashCommand("scan", L["Scan NPC in Dungeon for Nameplates"], function()
+		MOD:ActiveDungeonScanner(not MOD:IsCollecting())
+	end)
+
+	--MOD:EnableDungeonScanner()
 end
 -------
 --  DriverFrame
@@ -784,14 +812,16 @@ end
 
 function DriverFrame:UpdateNamePlateOptions()
 	--self.baseNamePlateWidth = 110;
-	self.baseNamePlateWidth = SV.db[Schema].healthBar.width or 110
-	self.baseNamePlateHeight = 45;
 
-	local namePlateVerticalScale = tonumber(GetCVar("NamePlateVerticalScale"));
+	local verticalScale = tonumber(GetCVar("NamePlateVerticalScale"));
 	local horizontalScale = tonumber(GetCVar("NamePlateHorizontalScale"));
-	C_NamePlate.SetNamePlateFriendlySize(self.baseNamePlateWidth * horizontalScale, self.baseNamePlateHeight);
-	C_NamePlate.SetNamePlateEnemySize(self.baseNamePlateWidth * horizontalScale, self.baseNamePlateHeight);
-	C_NamePlate.SetNamePlateSelfSize(self.baseNamePlateWidth * horizontalScale, self.baseNamePlateHeight);
+
+	self.baseNamePlateWidth = (SV.db[Schema].healthBar.width)
+	self.baseNamePlateHeight = (SV.db[Schema].healthBar.height + SV.db[Schema].castBar.height)
+
+	C_NamePlate.SetNamePlateFriendlySize(self.baseNamePlateWidth * horizontalScale, self.baseNamePlateHeight * verticalScale)
+	C_NamePlate.SetNamePlateEnemySize(self.baseNamePlateWidth * horizontalScale, self.baseNamePlateHeight * verticalScale)
+	C_NamePlate.SetNamePlateSelfSize(self.baseNamePlateWidth * horizontalScale, self.baseNamePlateHeight * verticalScale)
 
 
 	for i, frame in ipairs(C_NamePlate.GetNamePlates()) do
@@ -813,6 +843,8 @@ function DriverFrame:OnNamePlateCreated(nameplate)
 	f:Create(nameplate)
 	f:EnableMouse(false)
 
+	f:SetScale(UIParent:GetScale())
+
 	nameplate.UnitFrame = f
 end
 
@@ -821,6 +853,7 @@ function DriverFrame:OnNamePlateAdded(namePlateUnitToken)
 	if nameplate and nameplate.UnitFrame then
 		nameplate.UnitFrame:ApplyFrameOptions(namePlateUnitToken)
 		nameplate.UnitFrame:OnAdded(namePlateUnitToken)
+		nameplate.UnitFrame.healthBar:SetAlpha(SV.db[Schema].healthBar.nameplateNotSelectedAlpha)
 		nameplate.UnitFrame:UpdateAllElements()
 	end
 
@@ -847,11 +880,13 @@ function DriverFrame:OnTargetChanged()
 
 	if self.previousPlate and self.previousPlate.UnitFrame then
 		self.previousPlate.UnitFrame:UpdateScale()
+		self.previousPlate.UnitFrame.healthBar:SetAlpha(SV.db[Schema].healthBar.nameplateNotSelectedAlpha)
 	end
 
 	if nameplate and nameplate.UnitFrame then
 		nameplate.UnitFrame:OnUnitAuraUpdate()
 		nameplate.UnitFrame:UpdateScale()
+		nameplate.UnitFrame.healthBar:SetAlpha(1)
 		self.previousPlate = nameplate
 	end
 
@@ -1134,12 +1169,14 @@ function UnitFrameMixin:Create(unitframe)
 	MOD.CreatePlateBorder(h)
 	h.border:SetVertexColor(unpack(config.Colors.Frame))
 
+
 	self.level = h:CreateFontString(nil, 'OVERLAY',"SVUI_Font_NamePlate_Number")
 	self.level:SetPoint("RIGHT", h, "RIGHT", -2, 0)
 	self.level:SetJustifyH("RIGHT")
 
 	self.healthText = h:CreateFontString(nil, 'OVERLAY',"SVUI_Font_NamePlate_Number")
-	self.healthText:SetPoint("LEFT", h, "LEFT", 2, 0)
+	self.healthText:SetPoint("TOPLEFT", h, "TOPLEFT", 2, 0)
+	self.healthText:SetPoint("BOTTOMLEFT", h, "BOTTOMLEFT", 2, 0)
 	--self.healthText:SetFontObject(SVUI_Font_Number)
 	self.healthText:SetJustifyH("LEFT")
 	self.healthText:SetJustifyV("MIDDLE")
@@ -1270,11 +1307,13 @@ function UnitFrameMixin:Create(unitframe)
 	-- self.BuffFrame:SetScript('OnUpdate', self.BuffFrame.OnUpdate)
 	self.BuffFrame.UpdateAnchor = _hook_NameplateBuffContainerMixin_UpdateAnchor
 	self.BuffFrame:OnLoad()
-	self.BuffFrame:SetTargetYOffset(10)
+	--Due to scaling we need to upscale buff since it uses blizzard button fixed size for the moment
+	self.BuffFrame:SetScale(1.7)
+	self.BuffFrame:SetTargetYOffset(14)
 
 	-- Quest
 	self.questIcon = self:CreateTexture(nil, nil, nil, 0)
-	self.questIcon:SetSize(12, 12)
+	self.questIcon:SetSize(18, 18)
 
 	self.questIcon:SetTexture(path..'QUEST-BG-ICON.blp')
 	self.questIcon:SetPoint('LEFT', h, 'RIGHT', 2, 0)
@@ -1289,8 +1328,12 @@ end
 function UnitFrameMixin:ApplyFrameOptions(namePlateUnitToken)
 	if UnitIsUnit('player', namePlateUnitToken) then
 		self.optionTable = config.playerConfig
-		self.healthBar:SetPoint('LEFT', self, 'LEFT', 12, 5);
-		self.healthBar:SetPoint('RIGHT', self, 'RIGHT', -12, 5);
+		self.healthBar:ClearAllPoints()
+		--self.healthBar:SetPoint('LEFT', self, 'LEFT', 12, 5);
+		--self.healthBar:SetPoint('RIGHT', self, 'RIGHT', -12, 5);
+		self.healthBar:SetPoint("CENTER")
+		self.healthBar:SetPoint("LEFT")
+		self.healthBar:SetPoint("RIGHT")
 		self.healthBar:SetHeight(self.optionTable.healthBarHeight);
 		self.healthBar.eliteborder:Hide() 
 	else
@@ -1301,14 +1344,33 @@ function UnitFrameMixin:ApplyFrameOptions(namePlateUnitToken)
 			self.optionTable = config.enemyConfig
 		end
 
-		self.castBar:SetPoint('BOTTOMLEFT', self, 'BOTTOMLEFT', 12, 6);
-		self.castBar:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -12, 6);
+		self.castBar:ClearAllPoints()
+		self.castBar:SetPoint('BOTTOMLEFT', self, 'BOTTOMLEFT', 12, 0)
+		self.castBar:SetPoint('BOTTOMRIGHT', self, 'BOTTOMRIGHT', -12, 0)
 		self.castBar:SetHeight(self.optionTable.castBarHeight);
 		self.castBar.Icon:SetWidth(self.optionTable.castBarHeight + self.optionTable.healthBarHeight + 6)
-	
-		self.healthBar:SetPoint('BOTTOMLEFT', self.castBar, 'TOPLEFT', 0, 6);
-		self.healthBar:SetPoint('BOTTOMRIGHT', self.castBar, 'TOPRIGHT', 0, 6);
+
+		self.healthBar:ClearAllPoints()
+		--self.healthBar:SetPoint('BOTTOMLEFT', self.castBar, 'TOPLEFT', 0, 6);
+		--self.healthBar:SetPoint('BOTTOMRIGHT', self.castBar, 'TOPRIGHT', 0, 6);
+		self.healthBar:SetPoint("BOTTOMLEFT", self.castBar, "TOPLEFT")
+		self.healthBar:SetPoint("BOTTOMRIGHT", self.castBar, "TOPRIGHT")
 		self.healthBar:SetHeight(self.optionTable.healthBarHeight);
+
+		if SV.db[Schema].healthBar.text.enable then
+			self.healthText:Show()
+			self.healthText.format = SV.db[Schema].healthBar.text.format
+			self.healthText:ClearAllPoints()
+			self.healthText:SetPoint(SV.db[Schema].healthBar.text.attachTo, SV.db[Schema].healthBar.text.xOffset, SV.db[Schema].healthBar.text.yOffset)
+		else
+			self.healthText:Hide()
+		end
+
+		if SV.db[Schema].levelText then
+			self.level:Show()
+		else
+			self.level:Hide()
+		end
 	end
 end
 
@@ -1371,6 +1433,16 @@ function UnitFrameMixin:UnregisterEvents()
 	self:SetScript('OnEvent', nil)
 end
 
+function UnitFrameMixin:UpdateHealthText()
+	if not SV.db[Schema].healthBar.text.enable then return end
+
+	local unit = self.displayedUnit
+	local output = SetTagStyle(self.healthText.format, UnitHealth(unit), UnitHealthMax(unit))
+	DevTool:AddData({self.healthText.format, UnitHealth(unit), UnitHealthMax(unit), output}, "UpdateHealthText")
+	self.healthText:SetText(output)
+end
+
+
 function UnitFrameMixin:UpdateAllElements()
 	self:UpdateInVehicle()
 
@@ -1388,7 +1460,9 @@ function UnitFrameMixin:UpdateAllElements()
 		self:UpdateQuestVisuals()
 		self:UpdateStatusBar()
 
-		self.healthText:SetText(fomatHealthText(self.displayedUnit))
+		--self.healthText:SetText(fomatHealthText(self.displayedUnit))
+		self:UpdateHealthText()
+		self:UpdateLevelText()
 	end
 end
 
@@ -1403,12 +1477,13 @@ function UnitFrameMixin:OnEvent(event, ...)
 			CompactUnitFrame_UpdateHealth(self)
 			CompactUnitFrame_UpdateHealPrediction(self)
 
-			self.healthText:SetText(fomatHealthText(self.displayedUnit))
+			self:UpdateHealthText()
+			--self.healthText:SetText(fomatHealthText(self.displayedUnit))
 		elseif ( event == 'UNIT_HEALTH' ) then
 			CompactUnitFrame_UpdateHealth(self)
 			CompactUnitFrame_UpdateHealPrediction(self)
-
-			self.healthText:SetText(fomatHealthText(self.displayedUnit))
+			self:UpdateHealthText()
+			--self.healthText:SetText(fomatHealthText(self.displayedUnit))
 		elseif ( event == 'UNIT_NAME_UPDATE' ) then
 			CompactUnitFrame_UpdateName(self)
 			CompactUnitFrame_UpdateHealthColor(self)
@@ -1487,14 +1562,28 @@ function UnitFrameMixin:UpdateThreat()
 	tex:Hide() 
 end
 
-function UnitFrameMixin:UpdateStatusBar()
-	self.castBar:SetStatusBarTexture(config.StatusbarTexture, 'BACKGROUND', 1)
-	if not UnitIsUnit(self.displayedUnit,'player') then 
+function UnitFrameMixin:UpdateLevelText()
+	if not SV.db[Schema].levelText then return end
+
+	if not UnitIsUnit(self.displayedUnit,'player') then
 		if UnitLevel(self.displayedUnit) == -1 then
 			self.level:SetText('??')
 		else
 			self.level:SetText(UnitLevel(self.displayedUnit))
 		end
+	else
+		self.level:SetText(nil)
+	end
+end
+
+function UnitFrameMixin:UpdateStatusBar()
+	self.castBar:SetStatusBarTexture(config.StatusbarTexture, 'BACKGROUND', 1)
+	if not UnitIsUnit(self.displayedUnit,'player') then 
+		--if UnitLevel(self.displayedUnit) == -1 then
+		--	self.level:SetText('??')
+		--else
+		--	self.level:SetText(UnitLevel(self.displayedUnit))
+		--end
 
 		if config.SuperStyled and MOD.IsEliteUnit(self.displayedUnit) then 
 			self.healthBar.eliteborder:Show() 
@@ -1503,11 +1592,16 @@ function UnitFrameMixin:UpdateStatusBar()
 		end
 		MOD.Colorize(self)
 		self.healthBar:SetStatusBarTexture(GetNPCTexture(self.displayedUnit), 'BACKGROUND', 1)
+
+		if not UnitIsUnit(self.displayedUnit,'target') then
+			self.healthBar:SetAlpha(SV.db[Schema].healthBar.nameplateNotSelectedAlpha)
+		end
 	else
-		self.level:SetText(nil)
+		--self.level:SetText(nil)
 		self.healthBar.eliteborder:Hide()
 		self.healthBar:SetStatusBarTexture(config.StatusbarTexture, 'BACKGROUND', 1)
 	end
+
 end
 
 function UnitFrameMixin:UpdateQuestVisuals()
@@ -1526,11 +1620,20 @@ function UnitFrameMixin:UpdateQuestVisuals()
 end
 
 function UnitFrameMixin:UpdateScale(reset)
-	if reset or not UnitIsUnit(self.displayedUnit, 'target') then
-		self.healthBar:SetScale(SV.db[Schema].targetScale.base or 1)
-	else
-		self.healthBar:SetScale(SV.db[Schema].targetScale.target)
-	end
+
+	return
+
+	--if reset or not UnitIsUnit(self.displayedUnit, 'target') then
+	--	--We need to get UIParent Scale since we don't use the CVAR cause of big screen
+	--	--local s = (SV.db[Schema].targetScale.base or 1) * UIParent:GetScale()
+	--	self.healthBar:SetScale(SV.db[Schema].targetScale.base or 1)
+	--	--self.healthBar:SetScale(s)
+	--else
+	--	--local s = (SV.db[Schema].targetScale.target or 1) * UIParent:GetScale()
+	--	self.healthBar:SetScale(SV.db[Schema].targetScale.target)
+	--	--self.healthBar:SetScale(s)
+	--end
+
 end
 
 function UnitFrameMixin:OnUnitAuraUpdate(unitAuraUpdateInfo)

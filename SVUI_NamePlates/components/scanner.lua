@@ -54,8 +54,7 @@ CORE FUNCTIONS
 Scanner Functions
 ]]--
 
-function ScannerFrame:EnableCollect()
-
+function ScannerFrame:SetInstanceInCache()
     local name, instanceType, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
 
     if not dungeonCache[name] then
@@ -66,8 +65,23 @@ function ScannerFrame:EnableCollect()
             }
         }
     end
-
     self.dungeonName = name
+end
+
+function ScannerFrame:EnableCollect()
+
+    --local name, instanceType, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
+    --
+    --if not dungeonCache[name] then
+    --    dungeonCache[name] = {
+    --        ["InstanceID"] = instanceID,
+    --        ["NPC"] = {
+    --            --["Name"] = NPC_ID
+    --        }
+    --    }
+    --end
+
+    --self.dungeonName = name
     self.enable = true
 end
 
@@ -97,9 +111,10 @@ end
 function ScannerFrame:OnEvent(event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         if IsInInstance() then
-            self:EnableCollect()
-        else
-            self:DisableCollect()
+            self:SetInstanceInCache()
+        --    self:EnableCollect()
+        --else
+        --    self:DisableCollect()
         end
     elseif self:IsCollecting() then
         self[event](self, ...)
@@ -107,15 +122,49 @@ function ScannerFrame:OnEvent(event, ...)
 end
 
 function MOD:DisableDungeonScanner()
-    ScannerFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    if self.enable then return end
+
+    --ScannerFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
     ScannerFrame:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
     ScannerFrame:UnregisterEvent("FORBIDDEN_NAME_PLATE_UNIT_ADDED")
     ScannerFrame:SetScript("OnEvent", nil)
 end
 
 function MOD:EnableDungeonScanner()
+    if not self.enable then return end
+
     dungeonCache = MOD.public.dungeonCache
-    ScannerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    --ScannerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     ScannerFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED")
     ScannerFrame:SetScript("OnEvent", ScannerFrame.OnEvent)
+end
+
+function MOD:IsCollecting()
+    return ScannerFrame:IsCollecting()
+end
+
+function MOD:ActiveDungeonScanner(active)
+    --if not IsInInstance() then
+    --    self:DisableCollect()
+    --    self:DisableDungeonScanner()
+    --end
+    if (active == self:IsCollecting()) then return end
+
+    if active == true then
+        ScannerFrame:EnableCollect()
+
+        if IsInInstance() then
+            --Activation while in a dungeon
+            ScannerFrame:SetInstanceInCache()
+        end
+
+        self:EnableDungeonScanner()
+
+        print ("SV Dungeon NPC Scanner is now enabled")
+    else
+        ScannerFrame:DisableCollect()
+        self:DisableDungeonScanner()
+
+        print ("SV Dungeon NPC Scanner is now disabled")
+    end
 end
