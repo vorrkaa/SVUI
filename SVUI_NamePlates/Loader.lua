@@ -62,6 +62,7 @@ SV.defaults[Schema] = {
     ["fontSize"] = 10,
     ["fontOutline"] = "OUTLINE",
     ["comboPoints"] = true,
+    ["levelText"] = true,
     ["nonTargetAlpha"] = 0.6,
     ["combatHide"] = false,
     ["colorNameByValue"] = true,
@@ -76,15 +77,16 @@ SV.defaults[Schema] = {
     },
     ["healthBar"] = {
         ["lowThreshold"] = 0.4,
-        ["width"] = 108,
+        ["width"] = 120,
         ["height"] = 10,
         ["text"] = {
-            ["enable"] = false,
-            ["format"] = "CURRENT",
+            ["enable"] = true,
+            ["format"] = "CURRENT_PERCENT",
             ["xOffset"] = 0,
             ["yOffset"] = 0,
-            ["attachTo"] = "CENTER",
+            ["attachTo"] = "LEFT",
         },
+        ["nameplateNotSelectedAlpha"] = 0.8,
     },
     ["castBar"] = {
         ["height"] = 8,
@@ -125,10 +127,10 @@ SV.defaults[Schema] = {
         ["goodTransitionColor"] = { 0.85, 0.77, 0.36 },
         ["badTransitionColor"] = { 0.94, 0.6, 0.06 },
     },
-    ["targetScale"] = {
-        ["base"] = 1,
-        ["target"] = 1.15,
-    },
+    --["targetScale"] = {
+    --    ["base"] = 1,
+    --    ["target"] = 1.15,
+    --},
 };
 
 MOD.public = {
@@ -589,6 +591,10 @@ function MOD:LoadOptions()
                                 desc = L["Main statusbar texture."],
                                 values = AceVillainWidgets.statusbar
                             },
+                            levelText = {
+                                type = "toggle",
+                                name = L["Show level"],
+                            }
                             -- nonTargetAlpha = {
                             -- 	type = "range",
                             -- 	order = 7,
@@ -772,48 +778,48 @@ function MOD:LoadOptions()
                             -- 		}
                             -- 	}
                             -- },
-                            scaling = {
-                                type = "group",
-                                name = L["Target Scaling"],
-                                guiInline = true,
-                                order = 11,
-                                args = {
-                                    base = {
-                                        type = "range",
-                                        name = L["Base"],
-                                        order = 1,
-                                        min = 0.5,
-                                        max = 2,
-                                        step = 0.01,
-                                        width = 'full',
-                                        isPercent = true,
-                                        get = function(key)
-                                            return SV.db[Schema].targetScale.base
-                                        end,
-                                        set = function(key, value)
-                                            SV.db[Schema].targetScale.base = value;
-                                            MOD:UpdateAllPlates()
-                                        end,
-                                    },
-                                    target = {
-                                        type = "range",
-                                        name = L["Target"],
-                                        order = 1,
-                                        min = 1,
-                                        max = 2,
-                                        step = 0.01,
-                                        width = 'full',
-                                        isPercent = true,
-                                        get = function(key)
-                                            return SV.db[Schema].targetScale.target
-                                        end,
-                                        set = function(key, value)
-                                            SV.db[Schema].targetScale.target = value;
-                                            MOD:UpdateAllPlates()
-                                        end,
-                                    }
-                                }
-                            }
+                            --scaling = {
+                            --    type = "group",
+                            --    name = L["Target Scaling"],
+                            --    guiInline = true,
+                            --    order = 11,
+                            --    args = {
+                            --        base = {
+                            --            type = "range",
+                            --            name = L["Base"],
+                            --            order = 1,
+                            --            min = 0.5,
+                            --            max = 2,
+                            --            step = 0.01,
+                            --            width = 'full',
+                            --            isPercent = true,
+                            --            get = function(key)
+                            --                return SV.db[Schema].targetScale.base
+                            --            end,
+                            --            set = function(key, value)
+                            --                SV.db[Schema].targetScale.base = value;
+                            --                MOD:UpdateAllPlates()
+                            --            end,
+                            --        },
+                            --        target = {
+                            --            type = "range",
+                            --            name = L["Target"],
+                            --            order = 1,
+                            --            min = 1,
+                            --            max = 2,
+                            --            step = 0.01,
+                            --            width = 'full',
+                            --            isPercent = true,
+                            --            get = function(key)
+                            --                return SV.db[Schema].targetScale.target
+                            --            end,
+                            --            set = function(key, value)
+                            --                SV.db[Schema].targetScale.target = value;
+                            --                MOD:UpdateAllPlates()
+                            --            end,
+                            --        }
+                            --    }
+                            --}
                         }
                     },
                     cvar = {
@@ -872,7 +878,7 @@ function MOD:LoadOptions()
                                 order = 3,
                                 min = 0.75,
                                 max = 2,
-                                step = 0.1,
+                                step = 0.05,
                                 width = "double",
                                 --usedecimals = true,
                                 --isPercent = true,
@@ -956,26 +962,6 @@ function MOD:LoadOptions()
                                     end
                                 end,
                             },
-                            nameplateNotSelectedAlpha = {
-                                type = "range",
-                                name = L["nameplateNotSelectedAlpha"],
-                                order = 6,
-                                min = 0.2,
-                                max = 1,
-                                step = 0.01,
-                                width = "double",
-                                --usedecimals = true,
-                                --isPercent = true,
-                                desc = "Alpha applied when the nameplate is not selected.\n\n|cFFFFFFFFDefault: 1|r",
-                                get = function()
-                                    return tonumber(GetCVar("nameplateNotSelectedAlpha"))
-                                end,
-                                set = function(key, value)
-                                    if (not InCombatLockdown()) then
-                                        SetCVar("nameplateNotSelectedAlpha", value)
-                                    end
-                                end,
-                            },
                         }
                     },
                     healthBar = {
@@ -1010,6 +996,18 @@ function MOD:LoadOptions()
                                 max = 30,
                                 step = 1
                             },
+                            nameplateNotSelectedAlpha = {
+                                type = "range",
+                                name = L["nameplateNotSelectedAlpha"],
+                                order = 3,
+                                min = 0.2,
+                                max = 1,
+                                step = 0.01,
+                                width = "double",
+                                --usedecimals = true,
+                                isPercent = true,
+                                desc = "Alpha applied when the nameplate is not selected.\n\n|cFFFFFFFFDefault: 1|r",
+                            },
                             -- lowThreshold = {
                             -- 	type = "range",
                             -- 	order = 3,
@@ -1020,66 +1018,66 @@ function MOD:LoadOptions()
                             -- 	max = 1,
                             -- 	step = 0.01
                             -- },
-                            -- fontGroup = {
-                            -- 	order = 4,
-                            -- 	type = "group",
-                            -- 	name = L["Texts"],
-                            -- 	guiInline = true,
-                            -- 	get = function(d)return SV.db[Schema].healthBar.text[d[#d]]end,
-                            -- 	set = function(d,e)MOD:ChangeDBVar(e,d[#d],"healthBar","text");MOD:UpdateAllPlates()end,
-                            -- 	args = {
-                            -- 		enable = {
-                            -- 			type = "toggle",
-                            -- 			name = L["Enable"],
-                            -- 			order = 1
-                            -- 		},
-                            -- 		attachTo = {
-                            -- 			type = "select",
-                            -- 			order = 2,
-                            -- 			name = L["Attach To"],
-                            -- 			values = {
-                            -- 				TOPLEFT = "TOPLEFT",
-                            -- 				LEFT = "LEFT",
-                            -- 				BOTTOMLEFT = "BOTTOMLEFT",
-                            -- 				RIGHT = "RIGHT",
-                            -- 				TOPRIGHT = "TOPRIGHT",
-                            -- 				BOTTOMRIGHT = "BOTTOMRIGHT",
-                            -- 				CENTER = "CENTER",
-                            -- 				TOP = "TOP",
-                            -- 				BOTTOM = "BOTTOM"
-                            -- 			}
-                            -- 		},
-                            -- 		format = {
-                            -- 			type = "select",
-                            -- 			order = 3,
-                            -- 			name = L["Format"],
-                            -- 			values = {
-                            -- 				["CURRENT_MAX_PERCENT"] = L["Current - Max | Percent"],
-                            -- 				["CURRENT_PERCENT"] = L["Current - Percent"],
-                            -- 				["CURRENT_MAX"] = L["Current - Max"],
-                            -- 				["CURRENT"] = L["Current"],
-                            -- 				["PERCENT"] = L["Percent"],
-                            -- 				["DEFICIT"] = L["Deficit"]
-                            -- 			}
-                            -- 		},
-                            -- 		xOffset = {
-                            -- 			type = "range",
-                            -- 			order = 4,
-                            -- 			name = L["X-Offset"],
-                            -- 			min = -150,
-                            -- 			max = 150,
-                            -- 			step = 1
-                            -- 		},
-                            -- 		yOffset = {
-                            -- 			type = "range",
-                            -- 			order = 5,
-                            -- 			name = L["Y-Offset"],
-                            -- 			min = -150,
-                            -- 			max = 150,
-                            -- 			step = 1
-                            -- 		}
-                            -- 	}
-                            --}
+                             fontGroup = {
+                             	order = 4,
+                             	type = "group",
+                             	name = L["Texts"],
+                             	guiInline = true,
+                             	get = function(d)return SV.db[Schema].healthBar.text[d[#d]]end,
+                             	set = function(d,e)MOD:ChangeDBVar(e,d[#d],"healthBar","text");MOD:UpdateAllPlates()end,
+                             	args = {
+                             		enable = {
+                             			type = "toggle",
+                             			name = L["Enable"],
+                             			order = 1
+                             		},
+                             		attachTo = {
+                             			type = "select",
+                             			order = 2,
+                             			name = L["Attach To"],
+                             			values = {
+                             				TOPLEFT = "TOPLEFT",
+                             				LEFT = "LEFT",
+                             				BOTTOMLEFT = "BOTTOMLEFT",
+                             				RIGHT = "RIGHT",
+                             				TOPRIGHT = "TOPRIGHT",
+                             				BOTTOMRIGHT = "BOTTOMRIGHT",
+                             				CENTER = "CENTER",
+                             				TOP = "TOP",
+                             				BOTTOM = "BOTTOM"
+                             			}
+                             		},
+                             		format = {
+                             			type = "select",
+                             			order = 3,
+                             			name = L["Format"],
+                             			values = {
+                             				["CURRENT_MAX_PERCENT"] = L["Current - Max | Percent"],
+                             				["CURRENT_PERCENT"] = L["Current - Percent"],
+                             				["CURRENT_MAX"] = L["Current - Max"],
+                             				["CURRENT"] = L["Current"],
+                             				["PERCENT"] = L["Percent"],
+                             				["DEFICIT"] = L["Deficit"]
+                             			}
+                             		},
+                             		xOffset = {
+                             			type = "range",
+                             			order = 4,
+                             			name = L["X-Offset"],
+                             			min = -150,
+                             			max = 150,
+                             			step = 1
+                             		},
+                             		yOffset = {
+                             			type = "range",
+                             			order = 5,
+                             			name = L["Y-Offset"],
+                             			min = -150,
+                             			max = 150,
+                             			step = 1
+                             		}
+                             	}
+                            }
                         }
                     },
                     castBar = {
