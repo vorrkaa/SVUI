@@ -93,8 +93,8 @@
             <Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT" x="1" y="32" />
         </Anchors>
         <Frames>
-            <Frame name="$parentAlert" parentKey="Alert" frameStrata="BACKGROUND">
-                <Size y="1"/>
+            <Frame name="$parentAlert" parentKey="Alert" frameStrata="BACKGROUND" inherits="SVUI_CoreStyle_Button">
+                <Size y="22"/>
                 <Anchors>
                     <Anchor point="BOTTOMLEFT" x="0" y="4" />
                     <Anchor point="BOTTOMRIGHT" x="0" y="4" />
