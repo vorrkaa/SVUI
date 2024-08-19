@@ -1533,17 +1533,37 @@ local DockAlert_OnEvent = function(self, event)
     		dockAlertCombatActive = false
     	end
         self:SetHeight(self.activeHeight)
+		if self.child then
+			self.child:SetAllSecurePoints(self)
+			self.child = nil
+		end
         self:UnregisterEvent(event)
     end
 end
 
 local DockAlert_Activate = function(self, child, newHeight)
+
+	--if not InCombatLockdown() then
+	--	local fallbackHeight = SV.db.Dock.buttonSize or 22;
+	--	local size = newHeight or fallbackHeight;
+	--	self:SetHeight(size);
+	--	if(child) then
+	--		child:SetAllSecurePoints(self)
+	--	end
+	--end
+
 	if InCombatLockdown() then
+		self:RegisterEvent('PLAYER_REGEN_ENABLED')
+		self.activeHeight = newHeight or SV.db.Dock.buttonSize or 22
+		if child then
+			self.child = child
+		end
+
 		return
 	end
-	local fallbackHeight = SV.db.Dock.buttonSize or 22;
-	local size = newHeight or fallbackHeight;
-	self:SetHeight(size);
+
+	self:SetAlpha(1)
+	self:SetHeight(newHeight or SV.db.Dock.buttonSize or 22);
 	if(child) then
 		child:SetAllSecurePoints(self)
 	end
@@ -1555,7 +1575,9 @@ local DockAlert_Deactivate = function(self)
 		dockAlertCombatActive = true 
 		return 
 	end
+
 	self:SetHeight(1)
+	self:SetAlpha(0)
 end
 
 local DockProxy_ResetAll = function(self, ...)
@@ -1595,7 +1617,7 @@ for location, settings in pairs(DOCK_LOCATIONS) do
 
 	MOD[location].Alert.Activate 	= DockAlert_Activate;
 	MOD[location].Alert.Deactivate 	= DockAlert_Deactivate;
-	--MOD[location].Alert:SetScript("OnEvent", DockAlert_OnEvent);
+	MOD[location].Alert:SetScript("OnEvent", DockAlert_OnEvent);
 
 	MOD[location].Bar.Parent 		= MOD[location];
 	MOD[location].Bar.SetDefault 	= DockBar_SetDefault;
