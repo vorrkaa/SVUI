@@ -1012,8 +1012,6 @@ local function SetStanceBarButtons()
 end
 
 function MOD:UpdateUniqueBars()
-	print ("UpdateUniqueBars")
-
 	local bar = MOD.AltVehicleBar or _G["SVUI_ActionBar1"];
 	local barID = bar.dataID;
 	local space = SV.db.ActionBars[barID].buttonspacing

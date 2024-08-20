@@ -65,7 +65,7 @@ local function SkinWindow(window, width, height)
 	window:AttributeMenu(nil, nil, nil, "SVUI Default Font", 13, colors[id])
 	window:SetBarSettings(20, "SVUI BasicBar", true, nil, nil, nil, nil, nil, nil, true)
 	-- instance:SetBarTextSettings (size, font, fixedcolor, leftcolorbyclass, rightcolorbyclass, leftoutline, rightoutline, customrighttextenabled, customrighttext, percentage_type, showposition, customlefttextenabled, customlefttext, translittest)
-	window:SetBarTextSettings(12, "SVUI Default Font", nil, false, false, true, true, true, "{data2} - {data1} [{data3}]", 1, false, false, nil, true)
+	window:SetBarTextSettings(12, "SVUI Default Font", nil, false, false, true, true, false, nil, 1, false, false, nil, true)
 	window:HideStatusBar()
 	
 	window:SetAutoHideMenu(true)

@@ -103,6 +103,7 @@ local function forceCVars()
 	SetCVar('alwaysShowActionBars',1)
 	SetCVar('lockActionBars',1)
 	SetCVar('SpamFilter',0)
+	SetCVar('violenceLevel', 5)
 
 	Settings.GetSetting("autoLootDefault"):SetValue(true)
 	Settings.GetSetting("AUTOLOOTTOGGLE"):SetValue('SHIFT')

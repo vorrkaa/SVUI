@@ -1612,7 +1612,7 @@ end
 
 for location, settings in pairs(DOCK_LOCATIONS) do
 	MOD[location] = _G["SVUI_Dock" .. location];
-	print (location, _G.SVUI_DockBarTopLeft)
+	--print (location, _G.SVUI_DockBarTopLeft)
 	MOD[location].Bar = _G["SVUI_DockBar" .. location];
 
 	MOD[location].Alert.Activate 	= DockAlert_Activate;

@@ -450,8 +450,8 @@ local Clear                            = aUI.Clear
 local GetArtifactInfo                  = aUI.GetArtifactInfo
 local GetArtifactKnowledgeLevel        = aUI.GetArtifactKnowledgeLevel or _G.nop
 local GetArtifactKnowledgeMultiplier   = aUI.GetArtifactKnowledgeMultiplier or _G.nop
-local GetContainerItemInfo             = _G.GetContainerItemInfo
-local GetContainerNumSlots             = _G.GetContainerNumSlots
+local GetContainerItemInfo             = C_Container.GetContainerItemInfo
+local GetContainerNumSlots      		= C_Container.GetContainerNumSlots
 local GetCostForPointAtRank            = aUI.GetCostForPointAtRank
 local GetEquippedArtifactInfo          = aUI.GetEquippedArtifactInfo
 local GetInventoryItemEquippedUnusable = _G.GetInventoryItemEquippedUnusable
@@ -465,7 +465,7 @@ local GetPowers                        = aUI.GetPowers
 local GetRelicInfo                     = aUI.GetRelicInfo
 local GetRelicLockedReason             = aUI.GetRelicLockedReason
 local GetRelicSlotRankInfo             = aUI.GetRelicSlotRankInfo or _G.nop
-local GetSpellInfo                     = _G.GetSpellInfo
+local GetSpellInfo       				= C_Spell.GetSpellInfo
 local HasArtifactEquipped              = _G.HasArtifactEquipped
 local IsArtifactPowerItem              = _G.IsArtifactPowerItem
 local IsAtForge                        = aUI.IsAtForge
@@ -592,7 +592,8 @@ local function ScanTraits(artifactID)
 		local info = GetPowerInfo(traitID)
 		local spellID = info.spellID
 		if (info.currentRank) > 0 then
-			local name, _, icon = GetSpellInfo(spellID)
+			local spellInfo = GetSpellInfo(spellID)
+			local name, icon = spellInfo.name, spellInfo.iconID
 			traits[#traits + 1] = {
 				traitID = traitID,
 				spellID = spellID,
@@ -731,9 +732,10 @@ end
 
 local function ScanContainer(container, numObtained)
 	for slot = 1, GetContainerNumSlots(container) do
-		local _, _, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(container, slot)
-		if quality == LE_ITEM_QUALITY_ARTIFACT then
-			local classID = select(12, GetItemInfo(itemID))
+		local itemInfo = GetContainerItemInfo(container, slot)
+		--local _, _, _, quality, _, _, _, _, _, itemID = GetContainerItemInfo(container, slot)
+		if itemInfo and itemInfo.quality == LE_ITEM_QUALITY_ARTIFACT then
+			local classID = select(12, GetItemInfo(itemInfo.itemID))
 			if classID == LE_ITEM_CLASS_WEAPON or classID == LE_ITEM_CLASS_ARMOR then
 				Debug("ARTIFACT_FOUND", "in", container, slot)
 				SocketContainerItem(container, slot)

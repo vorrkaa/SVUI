@@ -305,7 +305,7 @@ local ModeCapture_PostClickHandler = function(self, button)
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
-	print ("ModeCapture_PostClickHandler")
+	--print ("ModeCapture_PostClickHandler")
 	ClearOverrideBindings(self)
 	self.Handler:Hide()
 end

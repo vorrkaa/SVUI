@@ -36,6 +36,8 @@ GUILD STATS
 ]]--
 local playerName = UnitName("player");
 local playerRealm = GetRealmName();
+local GuildRoster = C_GuildInfo.GuildRoster
+local LoadAddOn = C_AddOns.LoadAddOn
 
 local StatEvents = {"PLAYER_ENTERING_WORLD","GUILD_ROSTER_UPDATE","GUILD_CHALLENGE_UPDATED","PLAYER_GUILD_UPDATE","GUILD_MOTD"};
 local HEX_COLOR = "22CFFF";
@@ -123,7 +125,9 @@ local GuildStatEventHandler = {
 		else
 			GetGuildStatMembers()
 			GuildStatMOTD = GetGuildRosterMOTD()
-			if GetMouseFocus() == arg1 then
+
+			if GetMouseFoci()[1] == arg1 then
+			--if GetMouseFocus() == arg1 then
 				arg1:GetScript("OnEnter")(arg1, nil, true)
 			end
 		end
@@ -149,19 +153,26 @@ local function MenuRightClick(self, unit)
 end
 
 local function MenuLeftClick()
+
+	if not C_AddOns.IsAddOnLoaded("Blizzard_Communities") then
+		LoadAddOn("Blizzard_Communities")
+	end
+
 	if IsInGuild() then
-		if not GuildFrame then
-			LoadAddOn("Blizzard_GuildUI")
-		end
-		GuildFrame_Toggle()
-		GuildFrame_TabClicked(GuildFrameTab2)
+		--if not GuildFrame then
+		--	LoadAddOn("Blizzard_Communities")
+		--end
+		--GuildFrame_Toggle()
+		ToggleGuildFrame()
+		--GuildFrame_TabClicked(GuildFrameTab2)
 	else
-		if not LookingForGuildFrame then
-			LoadAddOn("Blizzard_LookingForGuildUI")
-		end
-		if LookingForGuildFrame then
-			LookingForGuildFrame_Toggle()
-		end
+		--if not LookingForGuildFrame then
+		--	LoadAddOn("Blizzard_LookingForGuildUI")
+		--end
+		ToggleGuildFinder()
+		--if LookingForGuildFrame then
+		--	LookingForGuildFrame_Toggle()
+		--end
 	end
 end
 
@@ -258,7 +269,12 @@ Report.OnEnter = function(self)
 			Reports.ToolTip:AddLine(("%s |cffaaaaaa- |cffffffff%s"):format(GUILD_MOTD, GuildStatMOTD), 0.75, 0.9, 1, 1)
 		end
 
-		local _, _, standingID, barMin, barMax, barValue = GetGuildFactionInfo()
+		local guildFactionData = C_Reputation.GetGuildFactionData()
+		local standingID = guildFactionData.currentStanding
+		local barMin = guildFactionData.currentReactionThreshold
+		local barMax = guildFactionData.nextReactionThreshold
+		local barValue = guildFactionData.reaction
+		--local _, _, standingID, barMin, barMax, barValue = GetGuildFactionInfo()
 		if standingID ~= 8 then
 			barMax = barMax - barMin;
 			barValue = barValue - barMin;
