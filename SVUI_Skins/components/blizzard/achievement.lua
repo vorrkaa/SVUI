@@ -186,11 +186,13 @@ local function AchievementStyle()
 	AchievementFrame.SearchBox:ClearAllPoints();
 	AchievementFrame.SearchBox:SetPoint("TOPLEFT", AchievementFrameHeaderRightDDLInset, "TOPLEFT", 12, -8);
 
-	SV.API:Set("DropDown", AchievementFrameFilterDropDown)
-	AchievementFrameFilterDropDown:ClearAllPoints();
-	AchievementFrameFilterDropDown:SetPoint("TOPRIGHT", AchievementFrame.SearchBox, "TOPLEFT", -12, 2);
-	AchievementFrameFilterDropDownText:ClearAllPoints();
-	AchievementFrameFilterDropDownText:SetPoint("LEFT", AchievementFrameFilterDropDown, "LEFT", 24, 0);
+	if AchievementFrameFilterDropDown then
+		SV.API:Set("DropDown", AchievementFrameFilterDropDown)
+		AchievementFrameFilterDropDown:ClearAllPoints();
+		AchievementFrameFilterDropDown:SetPoint("TOPRIGHT", AchievementFrame.SearchBox, "TOPLEFT", -12, 2);
+		AchievementFrameFilterDropDownText:ClearAllPoints();
+		AchievementFrameFilterDropDownText:SetPoint("LEFT", AchievementFrameFilterDropDown, "LEFT", 24, 0);
+	end
 
 	SV.API:Set("ScrollBar", AchievementFrameCategoriesContainer, 5)
 	SV.API:Set("ScrollBar", AchievementFrameAchievementsContainer, 5)
