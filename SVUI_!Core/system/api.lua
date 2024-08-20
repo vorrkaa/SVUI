@@ -2399,7 +2399,7 @@ end
 
 local ModifyNewScroll = function(self, adjustable, frame, scale, yOffset)
 
-    print ("|cFFFF0000ModifyNewScroll|r")
+    --print ("|cFFFF0000ModifyNewScroll|r")
     local parent = frame
     local bar = frame.ScrollBar or frame.BossesScrollBar
     local track = bar.Track

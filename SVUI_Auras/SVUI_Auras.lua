@@ -314,7 +314,7 @@ do
 	local UpdateConsolidatedReminder = function(self, event, arg)
 		if(event == "UNIT_AURA" and arg ~= "player") then return end
 
-		print ("---UpdateConsolidatedReminder---")
+		--print ("---UpdateConsolidatedReminder---")
 		
 		for i = 1, NUM_LE_RAID_BUFF_TYPES do
 			local name, _, duration, expiration, spellId, slot, caster, classFileName, unitName;

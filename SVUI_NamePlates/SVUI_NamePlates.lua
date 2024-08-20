@@ -1438,7 +1438,6 @@ function UnitFrameMixin:UpdateHealthText()
 
 	local unit = self.displayedUnit
 	local output = SetTagStyle(self.healthText.format, UnitHealth(unit), UnitHealthMax(unit))
-	DevTool:AddData({self.healthText.format, UnitHealth(unit), UnitHealthMax(unit), output}, "UpdateHealthText")
 	self.healthText:SetText(output)
 end
 
