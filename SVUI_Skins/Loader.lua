@@ -109,6 +109,8 @@ SV.defaults[Schema] = {
 		["dressingroom"] = true,
 		["pvp"] = true,
 		["lfg"] = true,
+		["delves"] = true,
+		["communities"] = true,
 		["nonraid"] = true,
 		["friends"] = true,
 		["spellbook"] = true,
@@ -459,6 +461,16 @@ function MOD:LoadOptions()
 					lfg = {
 						type = "toggle",
 						name = L["LFG Frame"],
+						desc = L["TOGGLEART_DESC"]
+					},
+					delves = {
+						type = "toggle",
+						name = L["Delves Frame"],
+						desc = L["TOGGLEART_DESC"]
+					},
+					communities = {
+						type = "toggle",
+						name = L["Communities Frame"],
 						desc = L["TOGGLEART_DESC"]
 					},
 					mounts = {
