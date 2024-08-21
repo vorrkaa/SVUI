@@ -64,7 +64,8 @@ local _PRIVATE_METHODS = {
 		-- if unit:find('target') or unit:find('focus') then
 		-- 	return UnitPower(unit, g)
 		-- end
-		return random(1, UnitPowerMax(unit, g)or 1)
+		--DevTool:AddData({unit, g, UnitPowerMax(unit, g)}, "VIEW: UnitPower")
+		return random(1, UnitPowerMax(unit, g) or 1)
 	end,
 	UnitHealth = function(unit)
 		-- if unit:find('target') or unit:find('focus') then
