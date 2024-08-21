@@ -109,7 +109,7 @@ local SetPopupRow = function(self, index, title, popUpType, questID, questLogInd
 	row.Badge:SetAlpha(1);
 	row.Button:Enable();
 	row.Button.PopUpType = popUpType;
-	row.Button:SetID(questLogIndex);
+	--row.Button:SetID(questLogIndex);
 	row:SetHeight(LARGE_ROW_HEIGHT);
 	row:FadeIn();
 
