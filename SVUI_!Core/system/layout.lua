@@ -70,6 +70,7 @@ UIPanels["BarberShopFrame"] 				= { moving = false, snapped = false, canupdate =
 UIPanels["BlackMarketFrame"] 				= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = false };
 UIPanels["CalendarFrame"] 					= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = true };
 UIPanels["CharacterFrame"] 					= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = false };
+UIPanels["CommunitiesFrame"] 					= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = false };
 UIPanels["ClassTrainerFrame"] 				= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = false };
 UIPanels["CollectionsJournal"] 				= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = false };
 UIPanels["DressUpFrame"] 					= { moving = false, snapped = false, canupdate = false, cansetpoint = false, centered = false };

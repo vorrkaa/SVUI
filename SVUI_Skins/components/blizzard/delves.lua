@@ -20,7 +20,7 @@ CHALLENGES UI MODR
 ]]--
 local function DelvesStyle()
 
-    if SV.db.Skins.blizzard.enable ~= true or SV.db.Skins.blizzard.lfg ~= true then return end
+    if SV.db.Skins.blizzard.enable ~= true or SV.db.Skins.blizzard.delves ~= true then return end
 
     local frame = DelvesDashboardFrame
     local ButtonPanel = frame.ButtonPanelLayoutFrame
