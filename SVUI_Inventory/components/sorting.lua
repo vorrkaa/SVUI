@@ -166,12 +166,27 @@ local scanningCache = {
 	["bags"] = {},
 	["bank"] = {BANK_CONTAINER},
 	["guild"] = {51,52,53,54,55,56,57,58},
-	-- ["reagent"] = {REAGENTBANK_CONTAINER},
+	["reagent"] = {REAGENTBANK_CONTAINER},
+	["account"] = { Enum.BagIndex.Accountbanktab }
 }
 do
 	local cacheCount = 1;
 	for i = NUM_BAG_SLOTS + 1, (NUM_BAG_SLOTS + NUM_BANKBAGSLOTS), 1 do
 	  scanningCache.bank[cacheCount] = i
+		cacheCount=cacheCount+1;
+	end
+end
+do
+	local cacheCount = 1;
+	for i = 1, 98 do
+		scanningCache.reagent[cacheCount] = i
+		cacheCount=cacheCount+1;
+	end
+end
+do
+	local cacheCount = 1;
+	for i = 1, 98 do
+		scanningCache.account[cacheCount] = i
 		cacheCount=cacheCount+1;
 	end
 end
@@ -192,10 +207,14 @@ do
 		scanningCache.all[cacheCount] = i
 		cacheCount=cacheCount+1;
 	end
-	-- for _,i in ipairs(scanningCache.reagent) do
-	-- 	scanningCache.all[cacheCount] = i
-	-- 	cacheCount=cacheCount+1;
-	-- end
+	for _,i in ipairs(scanningCache.reagent) do
+	 	scanningCache.all[cacheCount] = i
+	 	cacheCount=cacheCount+1;
+	end
+	for _,i in ipairs(scanningCache.account) do
+		scanningCache.all[cacheCount] = i
+		cacheCount=cacheCount+1;
+	end
 	for _,i in ipairs(scanningCache.guild) do
 		scanningCache.all[cacheCount] = i
 		cacheCount=cacheCount+1;
@@ -220,6 +239,9 @@ local function ValidateBag(bagid)
 end
 local function ValidateBank(bagid)
 	return (bagid == BANK_CONTAINER or bagid == REAGENTBANK_CONTAINER or (bagid > NUM_BAG_SLOTS and bagid <= NUM_BANKBAGSLOTS))
+end
+local function ValidateAccountBank(bagid)
+	return bagid == Enum.BagIndex.Accountbanktab
 end
 local function ValidateGuildBank(bagid)
 	return (bagid > 50 and bagid <= 58)

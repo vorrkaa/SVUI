@@ -219,7 +219,13 @@ local SlotUpdate = function(self, slotID)
 	slot:Show()
 	
 	-- local texture, count, locked = GetContainerItemInfo(bagID, slotID);
-	local itemInfo = GetContainerItemInfo(bagID, slotID)
+	local itemInfo
+	--Warband
+	if bagID == -5 then
+		itemInfo = GetContainerItemInfo(slot:GetBankTabID(), slot:GetContainerSlotID())
+	else
+		itemInfo = GetContainerItemInfo(bagID, slotID)
+	end
 	
 	local texture = itemInfo and itemInfo.iconFileID or "" --itemInfo.iconFileID
 	local count = itemInfo and itemInfo.stackCount or 0 --itemInfo.stackCount
@@ -282,7 +288,7 @@ local SlotUpdate = function(self, slotID)
 	slot:SetBackdropColor(r,g,b,0.6)
 	slot:SetBackdropBorderColor(r,g,b,1)
 
-	CooldownFrame_Set(slot.cooldown, start, duration, enable);
+	CooldownFrame_Set(slot.cooldown or slot.Cooldown, start, duration, enable);
 
 	if((duration > 0) and (enable == 0)) then
 		SetItemButtonTextureVertexColor(slot, 0.4, 0.4, 0.4)
@@ -308,8 +314,13 @@ end
 local ContainerFrame_RefreshSlots = function(self)
 	local bagID = self:GetID()
 	if(not bagID) then return end
-	local maxcount = GetContainerNumSlots(bagID)
-	for slotID = 1, maxcount do
+	local maxCount
+	if self.isWarband then
+		maxCount = GetContainerNumSlots(self.selectedTabID)
+	else
+		maxCount = GetContainerNumSlots(bagID)
+	end
+	for slotID = 1, maxCount do
 		self:SlotUpdate(slotID)
 	end
 end
@@ -644,6 +655,134 @@ local ContainerFrame_UpdateLayout = function(self)
 	MOD:UpdateStockpile()
 end
 
+local AccountFrame_UpdateLayout = function(self)
+	if not AccountBankPanel then return end
+
+	local accountBankPanel = AccountBankPanel
+
+	local containerName = self:GetName()
+	local buttonSpacing = 8;
+
+	local numContainerRows = AccountBankPanel.numRows or 7
+	local preSubColumns = AccountBankPanel.numSubColumns or 2
+	local preColumns = 7
+	local numContainerColumns = preColumns * preSubColumns
+	local buttonSize = MOD.BankFrame.ButtonSize
+	local containerWidth = (buttonSize + buttonSpacing) * numContainerColumns + buttonSpacing
+	local containerHeight = (((buttonSize + buttonSpacing) * numContainerRows) - buttonSpacing) + self.topOffset + self.bottomOffset
+	local maxCount = numContainerColumns * numContainerRows
+	local holderWidth = ((buttonSize + buttonSpacing) * numContainerColumns) - buttonSpacing;
+	local lastButton, lastRowButton;
+	local bankType = Enum.BankType.Account
+	local bagID = Enum.BagIndex.Accountbanktab
+	local totalSlots = 0;
+
+	self.holderFrame:SetWidth(holderWidth);
+	self.bankType = bankType
+	self.BagID = bagID
+	self.purchasedBankTabData = C_Bank.FetchPurchasedBankTabData(bankType)
+	if not self.selectedTabID then self.selectedTabID = self.purchasedBankTabData[1].ID end
+
+	local bag;
+	local bagName = ("%sBag%d"):format(containerName, bagID)
+
+	if not self.Bags[bagID] then
+		bag = CreateFrame("Frame", bagName, self);
+		bag:SetID(bagID);
+		bag.SlotUpdate = SlotUpdate;
+		bag.RefreshSlots = ContainerFrame_RefreshSlots;
+		self.Bags[bagID] = bag
+	else
+		bag = self.Bags[bagID]
+	end
+
+	self.numSlots = maxCount;
+	bag.numSlots = maxCount;
+	bag.bagFamily = false;
+
+	for slotID = 1, maxCount do
+		local slot;
+		totalSlots = totalSlots + 1;
+
+		if not bag[slotID] then
+			local slotName = ("%sSlot%d"):format(bagName, slotID)
+			local iconName = ("%sIconTexture"):format(slotName)
+			local questIcon = ("%sIconQuestTexture"):format(slotName)
+			local cdName = ("%sCooldown"):format(slotName)
+
+			slot = CreateFrame("ItemButton", slotName, bag, "AccountBankItemButtonTemplate, BackdropTemplate")
+			--slot.GetInventorySlot = ReagentButtonInventorySlot -- mimic ReagentBankItemButtonGenericTemplate
+			slot:Init(self.selectedTabID, slotID)
+			slot:SetNormalTexture("")
+			slot:RemoveTextures()
+			slot:SetStyle("!_ActionSlot")
+
+			if(slot.IconBorder) then
+				slot.IconBorder:Die()
+			end
+
+			-- slot.NewItemTexture = slot:CreateTexture(nil, "OVERLAY", 1)
+			slot.NewItemTexture = slot:CreateTexture(nil)
+			slot.NewItemTexture:SetDrawLayer("OVERLAY", 1)
+			slot.NewItemTexture:InsetPoints(slot)
+			slot.NewItemTexture:SetTexture("")
+			slot.NewItemTexture:Hide()
+
+			slot.JunkIcon = slot:CreateTexture(nil, "OVERLAY")
+			slot.JunkIcon:SetSize(16,16)
+			slot.JunkIcon:SetTexture("")
+			slot.JunkIcon:SetPoint("TOPLEFT", slot, "TOPLEFT", -4, 4)
+
+			slot.icon = _G[iconName] or slot:CreateTexture(nil, "BORDER")
+			slot.icon:InsetPoints(slot)
+			slot.icon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
+
+			slot.questIcon = _G[questIcon] or slot:CreateTexture(nil, "OVERLAY")
+			slot.questIcon:SetTexture(TEXTURE_ITEM_QUEST_BANG)
+			slot.questIcon:InsetPoints(slot)
+			slot.questIcon:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
+
+			bag[slotID] = slot
+		else
+			slot = bag[slotID]
+			slot:Init(self.selectedTabID, slotID)
+		end
+
+		slot:SetID(slotID);
+		slot:SetSize(buttonSize, buttonSize);
+
+		if slot:GetPoint() then
+			slot:ClearAllPoints();
+		end
+
+		if lastButton then
+			if((totalSlots - 1) % numContainerColumns == 0) then
+				slot:SetPoint("TOP", lastRowButton, "BOTTOM", 0, -buttonSpacing);
+				lastRowButton = slot;
+			else
+				slot:SetPoint("LEFT", lastButton, "RIGHT", buttonSpacing, 0);
+			end
+		else
+			slot:SetPoint("TOPLEFT", self.holderFrame, "TOPLEFT");
+			lastRowButton = slot;
+		end
+
+		lastButton = slot;
+
+		if(not slot.Count) then
+			self.Bags[bagID][slotID].Count = self.Bags[bagID][slotID]:CreateFontString(nil, "ARTWORK")
+			self.Bags[bagID][slotID].Count:SetFontObject(SVUI_Font_Default)
+			self.Bags[bagID][slotID].Count:ClearAllPoints()
+			self.Bags[bagID][slotID].Count:SetPoint("BOTTOMRIGHT", self.Bags[bagID][slotID], "BOTTOMRIGHT", 0, 0)
+		end
+
+		bag:SlotUpdate(slotID);
+	end
+
+	self:SetSize(containerWidth, containerHeight);
+	MOD:UpdateStockpile()
+end
+
 local ReagentFrame_UpdateLayout = function(self)
 	if not _G.ReagentBankFrame then return; end
 
@@ -785,6 +924,9 @@ function MOD:RefreshBagFrames(frame)
 		end
 		if self.ReagentFrame then
 			self.ReagentFrame:UpdateLayout()
+		end
+		if self.AccountFrame then
+			self.AccountFrame:UpdateLayout()
 		end
 	end
 end
@@ -1406,6 +1548,160 @@ do
 		self.MasterFrame = frame
 	end
 
+	function MOD:CreateAccountFrame()
+		local bagName = "SVUI_AccountContainerFrame"
+
+		local frame = CreateFrame("Button", bagName, SV.Screen)
+		frame:SetStyle("Frame", "Pattern")
+		frame:SetFrameStrata("HIGH")
+		frame:SetFrameLevel(self.MasterFrame:GetFrameLevel() + 99)
+
+		frame.UpdateLayout = AccountFrame_UpdateLayout
+		frame.RefreshBags = ContainerFrame_UpdateBags
+		frame.RefreshCooldowns = ContainerFrame_UpdateCooldowns
+
+		frame:RegisterEvent("ITEM_LOCK_CHANGED")
+		frame:RegisterEvent("ITEM_UNLOCKED")
+		frame:RegisterEvent("BAG_UPDATE_COOLDOWN")
+		frame:RegisterEvent("BAG_UPDATE")
+		frame:RegisterEvent("EQUIPMENT_SETS_CHANGED")
+		frame:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
+		frame:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
+
+		frame:SetMovable(true)
+		frame:RegisterForDrag("LeftButton", "RightButton")
+		frame:RegisterForClicks("AnyUp")
+		frame:SetScript("OnDragStart", Container_OnDragStart)
+		frame:SetScript("OnDragStop", Container_OnDragStop)
+		frame:SetScript("OnClick", Container_OnClick)
+		frame:SetScript("OnEnter", Container_OnEnter)
+		frame:SetScript("OnLeave", Token_OnLeave)
+		self:SetContainerEvents(frame)
+
+		frame.isBank = true
+		frame.isReagent = false
+		frame.isWarband = true
+		frame:Hide()
+		frame.bottomOffset = 8;
+		frame.topOffset = 60;
+
+		--if(isReagent) then
+		--	frame.BagIDs = {REAGENTBANK_CONTAINER}
+		--else
+		--	frame.BagIDs = {-1, 5, 6, 7, 8, 9, 10, 11}
+		--end
+
+		frame.BagIDs = { Enum.BagIndex.Accountbanktab }
+
+		frame.bankType = Enum.BankType.Account
+		frame.Bags = {}
+
+		frame.closeButton = CreateFrame("Button", bagName.."CloseButton", frame, "UIPanelCloseButton, BackdropTemplate")
+		frame.closeButton:SetPoint("TOPRIGHT", -4, -4)
+		SV.API:Set("CloseButton", frame.closeButton);
+		frame.closeButton:SetScript("PostClick", function()
+			if(not InCombatLockdown()) then CloseBag(0) end
+		end)
+
+		frame.holderFrame = CreateFrame("Frame", nil, frame)
+		frame.holderFrame:SetPoint("TOP", frame, "TOP", 0, -frame.topOffset)
+		frame.holderFrame:SetPoint("BOTTOM", frame, "BOTTOM", 0, frame.bottomOffset)
+
+		frame.Title = frame:CreateFontString()
+		frame.Title:SetFontObject(SVUI_Font_Header)
+		frame.Title:SetText(ACCOUNT_BANK_PANEL_TITLE)
+		frame.Title:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -2)
+		frame.Title:SetTextColor(1,0.8,0)
+
+		frame.sortButton = CreateFrame("Button", nil, frame)
+		frame.sortButton:SetPoint("TOPRIGHT", frame, "TOP", 0, -10)
+		frame.sortButton:SetSize(25, 25)
+		StyleBagToolButton(frame.sortButton, MOD.media.cleanupIcon)
+		frame.sortButton.ttText = L["Sort Bank"]
+		frame.sortButton.ttText2 = L["[SHIFT + CLICK]"]
+
+		frame.sortButton.ttText2desc = L["Filtered Cleanup (Default Sorting)"]
+		frame.sortButton:SetScript("OnEnter", Tooltip_Show)
+		frame.sortButton:SetScript("OnLeave", Tooltip_Hide)
+
+		frame.stackButton = CreateFrame("Button", nil, frame)
+		frame.stackButton:SetPoint("LEFT", frame.sortButton, "RIGHT", 10, 0)
+		frame.stackButton:SetSize(25, 25)
+		StyleBagToolButton(frame.stackButton, MOD.media.stackIcon)
+		frame.stackButton.ttText = L["Stack Items"]
+		frame.stackButton:SetScript("OnEnter", Tooltip_Show)
+		frame.stackButton:SetScript("OnLeave", Tooltip_Hide)
+
+		frame.BagMenu = CreateFrame("Button", bagName.."BagMenu", frame)
+		frame.BagMenu:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 1)
+		frame.BagMenu:SetStyle("!_Frame", "Transparent")
+		frame.BagMenu:Hide()
+
+		local Sort_OnClick = MOD:RunSortingProcess(MOD.Sort, "account", C_Container.SortAccountBankBags)
+		frame.sortButton:SetScript("OnClick", Sort_OnClick)
+		local Stack_OnClick = MOD:RunSortingProcess(MOD.Stack, "account")
+		frame.stackButton:SetScript("OnClick", Stack_OnClick)
+
+		frame.transferButton = CreateFrame("Button", nil, frame)
+		frame.transferButton:SetPoint("LEFT", frame.stackButton, "RIGHT", 10, 0)
+		frame.transferButton:SetSize(25, 25)
+		StyleBagToolButton(frame.transferButton, MOD.media.transferIcon)
+		frame.transferButton.ttText = L["Stack Account to Bags"]
+		frame.transferButton:SetScript("OnEnter", Tooltip_Show)
+		frame.transferButton:SetScript("OnLeave", Tooltip_Hide)
+		local Transfer_OnClick = MOD:RunSortingProcess(MOD.Transfer, "account bags")
+		frame.transferButton:SetScript("OnClick", Transfer_OnClick)
+
+		tinsert(UISpecialFrames, bagName)
+
+		frame.bagsButton = CreateFrame("Button", nil, frame)
+		frame.bagsButton:SetPoint("RIGHT", frame.sortButton, "LEFT", -10, 0)
+		frame.bagsButton:SetSize(25, 25)
+		StyleBagToolButton(frame.bagsButton, MOD.media.bagIcon)
+		frame.bagsButton.ttText = L["Toggle Bags"]
+		frame.bagsButton:SetScript("OnEnter", Tooltip_Show)
+		frame.bagsButton:SetScript("OnLeave", Tooltip_Hide)
+		local BagBtn_OnClick = function()
+			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
+			if(BagFilters and BagFilters:IsShown()) then
+				ToggleFrame(BagFilters)
+			end
+			local numSlots, _ = GetNumBankSlots()
+			if numSlots  >= 1 then
+				ToggleFrame(frame.BagMenu)
+			else
+				SV:StaticPopup_Show("NO_BANK_BAGS")
+			end
+		end
+		frame.bagsButton:SetScript("OnClick", BagBtn_OnClick)
+
+		frame.purchaseBagButton = CreateFrame("Button", nil, frame)
+		frame.purchaseBagButton:SetSize(25, 25)
+		frame.purchaseBagButton:SetPoint("RIGHT", frame.bagsButton, "LEFT", -10, 0)
+		frame.purchaseBagButton:SetFrameLevel(frame.purchaseBagButton:GetFrameLevel()+2)
+		StyleBagToolButton(frame.purchaseBagButton, MOD.media.purchaseIcon)
+		frame.purchaseBagButton.ttText = L["Purchase"]
+		frame.purchaseBagButton:SetScript("OnEnter", Tooltip_Show)
+		frame.purchaseBagButton:SetScript("OnLeave", Tooltip_Hide)
+		local PurchaseBtn_OnClick = function()
+			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
+			if C_Bank.CanPurchaseBankTab(Enum.BankType.Account) then
+				local textArg1, textArg2 = nil, nil;
+				SV:StaticPopup_Show("BUY_ACCOUNTBANK_SLOT", textArg1, textArg2, { bankType = frame.bankType })
+			else
+				SV:StaticPopup_Show("CANNOT_BUY_ACCOUNTBANK_SLOT")
+			end
+		end
+		frame.purchaseBagButton:SetScript("OnClick", PurchaseBtn_OnClick)
+
+		frame:SetPoint("BOTTOMLEFT", self.BankFrame, "TOPLEFT", 0, 2)
+
+		frame:SetScript("OnHide", CloseBankFrame)
+		self.AccountFrame = frame
+
+		SV:UpdateSharedMedia()
+	end
+
 	function MOD:CreateBankOrReagentFrame(isReagent)
 		-- Reagent Slots: 1 - 98
 		-- /script print(ReagentBankFrameItem1:GetInventorySlot())
@@ -1582,10 +1878,42 @@ do
 					end
 				end
 			end)
+
+			frame.accountButton = CreateFrame("Button", nil, frame)
+			frame.accountButton:SetPoint("RIGHT", frame.swapButton, "LEFT", -10, 0)
+			frame.accountButton:SetSize(25, 25)
+			StyleBagToolButton(frame.accountButton, active_icon)
+			frame.accountButton.ttText = L["Toggle Account Bank"]
+			frame.accountButton:SetScript("OnEnter", function(self)
+				GameTooltip:SetOwner(self:GetParent(),"ANCHOR_TOP",0,4)
+				GameTooltip:ClearLines()
+				if(not C_Bank.CanViewBank(Enum.BankType.Account)) then
+					GameTooltip:AddDoubleLine("Purchase Account Bank", SV:FormatCurrency(C_Bank.FetchNextPurchasableBankTabCost(Enum.BankType.Account)), 0.1,1,0.1, 1,1,1)
+				else
+					GameTooltip:AddLine(self.ttText)
+				end
+				self:GetNormalTexture():SetGradient(unpack(SV.media.gradient.highlight))
+				GameTooltip:Show()
+			end)
+			frame.accountButton:SetScript("OnLeave", Tooltip_Hide)
+			frame.accountButton:SetScript("OnClick", function()
+				if(not C_Bank.CanViewBank(Enum.BankType.Account)) then
+					SV:StaticPopup_Show("BUY_ACCOUNTBANK_SLOT");
+				else
+					PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
+					if(_G["SVUI_AccountContainerFrame"]:IsShown()) then
+						_G["SVUI_AccountContainerFrame"]:Hide()
+					else
+						_G["SVUI_AccountContainerFrame"]:Show()
+						--_G["SVUI_AccountContainerFrame"]:RefreshBagFrames()
+					end
+				end
+			end)
+
 			frame:SetScript("OnHide", CloseBankFrame)
 			self.BankFrame = frame
 		else
-			local Sort_OnClick = MOD:RunSortingProcess(MOD.Sort, "reagent", C_Container.SortBankBags)
+			local Sort_OnClick = MOD:RunSortingProcess(MOD.Sort, "reagent", C_Container.SortReagentBankBags)
 			frame.sortButton:SetScript("OnClick", Sort_OnClick)
 			local Stack_OnClick = MOD:RunSortingProcess(MOD.Stack, "reagent")
 			frame.stackButton:SetScript("OnClick", Stack_OnClick)
@@ -1811,15 +2139,16 @@ function MOD:BANKFRAME_OPENED()
 	if(not self.BankFrame) then
 		self:CreateBankOrReagentFrame()
 	end
-	self.BankFrame:UpdateLayout()
-
 	if(not self.ReagentFrame) then
 		self:CreateBankOrReagentFrame(true)
 	end
-
-	if(self.ReagentFrame) then
-		self.ReagentFrame:UpdateLayout()
+	if not self.AccountFrame then
+		self:CreateAccountFrame()
 	end
+
+	self.BankFrame:UpdateLayout()
+	self.ReagentFrame:UpdateLayout()
+	self.AccountFrame:UpdateLayout()
 
 	self:ModifyBags()
 
@@ -1840,6 +2169,9 @@ function MOD:BANKFRAME_CLOSED()
 	if(self.ReagentFrame and self.ReagentFrame:IsShown()) then
 		self.ReagentFrame:Hide()
 	end
+	if self.AccountFrame and self.AccountFrame:IsShown() then
+		self.AccountFrame:Hide()
+	end
 end
 
 function MOD:PLAYERBANKBAGSLOTS_CHANGED()
@@ -1848,6 +2180,9 @@ function MOD:PLAYERBANKBAGSLOTS_CHANGED()
 	end
 	if(self.ReagentFrame) then
 		self.ReagentFrame:UpdateLayout()
+	end
+	if(self.AccountFrame) then
+		self.AccountFrame:UpdateLayout()
 	end
 end
 
@@ -2010,11 +2345,34 @@ function MOD:Load()
 		hideOnEscape = 1
 	};
 
+	SV.SystemAlert["BUY_ACCOUNTBANK_SLOT"] = {
+		text = CONFIRM_BUY_ACCOUNT_BANK_TAB,
+		button1 = YES,
+		button2 = NO,
+		OnAccept = function(self) C_Bank.PurchaseBankTab(self.data.bankType) end,
+		OnShow = function(self)
+			local tabCost = C_Bank.FetchNextPurchasableBankTabCost(self.data.bankType);
+			if tabCost then
+				MoneyFrame_Update(self.moneyFrame, tabCost);
+			end
+			if(MOD.AccountFrame) then
+				MOD.AccountFrame:UpdateLayout()
+				MOD.AccountFrame:Show()
+				if(MOD.AccountFrame.swapButton) then
+					MOD.AccountFrame.swapButton:SetNormalTexture(MOD.media.reagentIcon)
+				end
+			end
+		end,
+		hasMoneyFrame = 1,
+		timeout = 0,
+		hideOnEscape = 1
+	};
+
 	SV.SystemAlert["CONFIRM_BUY_REAGENTBANK_TAB"] = {
 		text = L["Purchase Reagents Bank?"],
 		button1 = YES,
 		button2 = NO,
-		OnAccept = function(self) BuyReagentBank() end,
+		OnAccept = function(self) C_Bank.PurchaseBankTab(self.data.bankType) end,
 		OnShow = function(self)
 			MoneyFrame_Update(self.moneyFrame, GetReagentBankCost());
 			if(MOD.ReagentFrame) then
@@ -2031,6 +2389,13 @@ function MOD:Load()
 	};
 
 	SV.SystemAlert["CANNOT_BUY_BANK_SLOT"] = {
+		text = L["Can't buy anymore slots!"],
+		button1 = ACCEPT,
+		timeout = 0,
+		whileDead = 1
+	};
+
+	SV.SystemAlert["CANNOT_BUY_ACCOUNTBANK_SLOT"] = {
 		text = L["Can't buy anymore slots!"],
 		button1 = ACCEPT,
 		timeout = 0,
