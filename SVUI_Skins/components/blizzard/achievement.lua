@@ -116,6 +116,9 @@ local _hook_AchievementsUpdate = function()
 end
 
 local function BarStyleHelper(bar)
+
+	if not bar then return end
+
 	bar:RemoveTextures()
 	bar:SetStatusBarTexture(SV.media.statusbar.default)
 	bar:SetStatusBarColor(4/255, 179/255, 30/255)
@@ -212,8 +215,10 @@ local function AchievementStyle()
 	BarStyleHelper(AchievementFrameComparisonSummaryPlayerStatusBar)
 	BarStyleHelper(AchievementFrameComparisonSummaryFriendStatusBar)
 
-	AchievementFrameComparisonSummaryFriendStatusBar.text:ClearAllPoints()
-	AchievementFrameComparisonSummaryFriendStatusBar.text:SetPoint("CENTER")
+	if AchievementFrameComparisonSummaryFriendStatusBar then
+		AchievementFrameComparisonSummaryFriendStatusBar.text:ClearAllPoints()
+		AchievementFrameComparisonSummaryFriendStatusBar.text:SetPoint("CENTER")
+	end
 	AchievementFrameComparisonHeader:SetPoint("BOTTOMRIGHT", AchievementFrameComparison, "TOPRIGHT", 45, -20)
 
 	for i = 1, 12 do
@@ -241,7 +246,7 @@ local function AchievementStyle()
 		self.containerStyled = true
 	end)
 
-	hooksecurefunc("AchievementButton_DisplayAchievement", function(self)
+	hooksecurefunc("AchievementFrame_ToggleAchievementFrame", function(self)
 		if(self.accountWide and self.bg3) then
 			self.bg3:SetBackdropBorderColor(ACHIEVEMENTUI_BLUEBORDER_R, ACHIEVEMENTUI_BLUEBORDER_G, ACHIEVEMENTUI_BLUEBORDER_B)
 		elseif self.bg3 then
@@ -315,125 +320,127 @@ local function AchievementStyle()
 		end
 	end
 
-	local u = {"Player", "Friend"}
-	for c, v in pairs(u) do
-		for f = 1, 9 do
-			local d = "AchievementFrameComparisonContainerButton"..f..v;
-			_G[d]:RemoveTextures()
-			_G[d.."Background"]:Die()
-			if _G[d.."Description"]then
-				_G[d.."Description"]:SetTextColor(0.6, 0.6, 0.6)
-				hooksecurefunc(_G[d.."Description"], "SetTextColor", _hook_DescriptionColor)
-			end
-			_G[d].bg1 = _G[d]:CreateTexture(nil, "BACKGROUND")
-			_G[d].bg1:SetDrawLayer("BACKGROUND", 4)
-			_G[d].bg1:SetTexture(SV.media.background.transparent)
-			_G[d].bg1:SetVertexColor(unpack(SV.media.color.default))
-			_G[d].bg1:SetPoint("TOPLEFT", 4, -4)
-			_G[d].bg1:SetPoint("BOTTOMRIGHT", -4, 4)
-			_G[d].bg2 = _G[d]:CreateTexture(nil, "BACKGROUND")
-			_G[d].bg2:SetDrawLayer("BACKGROUND", 3)
-			_G[d].bg2:SetColorTexture(0, 0, 0)
-			_G[d].bg2:SetPoint("TOPLEFT", 3, -3)
-			_G[d].bg2:SetPoint("BOTTOMRIGHT", -3, 3)
-			_G[d].bg3 = _G[d]:CreateTexture(nil, "BACKGROUND")
-			_G[d].bg3:SetDrawLayer("BACKGROUND", 2)
-			_G[d].bg3:SetColorTexture(0,0,0,1)
-			_G[d].bg3:SetPoint("TOPLEFT", 2, -2)
-			_G[d].bg3:SetPoint("BOTTOMRIGHT", -2, 2)
-			_G[d].bg4 = _G[d]:CreateTexture(nil, "BACKGROUND")
-			_G[d].bg4:SetDrawLayer("BACKGROUND", 1)
-			_G[d].bg4:SetColorTexture(0, 0, 0)
-			_G[d].bg4:SetPoint("TOPLEFT", 1, -1)
-			_G[d].bg4:SetPoint("BOTTOMRIGHT", -1, 1)
+	----AchievementFrameComparison.AchievementContainer
+	--
+	--local u = {"Player", "Friend"}
+	--for c, v in pairs(u) do
+	--	for f = 1, 9 do
+	--		local d = "AchievementFrameComparisonContainerButton"..f..v;
+	--		_G[d]:RemoveTextures()
+	--		_G[d.."Background"]:Die()
+	--		if _G[d.."Description"]then
+	--			_G[d.."Description"]:SetTextColor(0.6, 0.6, 0.6)
+	--			hooksecurefunc(_G[d.."Description"], "SetTextColor", _hook_DescriptionColor)
+	--		end
+	--		_G[d].bg1 = _G[d]:CreateTexture(nil, "BACKGROUND")
+	--		_G[d].bg1:SetDrawLayer("BACKGROUND", 4)
+	--		_G[d].bg1:SetTexture(SV.media.background.transparent)
+	--		_G[d].bg1:SetVertexColor(unpack(SV.media.color.default))
+	--		_G[d].bg1:SetPoint("TOPLEFT", 4, -4)
+	--		_G[d].bg1:SetPoint("BOTTOMRIGHT", -4, 4)
+	--		_G[d].bg2 = _G[d]:CreateTexture(nil, "BACKGROUND")
+	--		_G[d].bg2:SetDrawLayer("BACKGROUND", 3)
+	--		_G[d].bg2:SetColorTexture(0, 0, 0)
+	--		_G[d].bg2:SetPoint("TOPLEFT", 3, -3)
+	--		_G[d].bg2:SetPoint("BOTTOMRIGHT", -3, 3)
+	--		_G[d].bg3 = _G[d]:CreateTexture(nil, "BACKGROUND")
+	--		_G[d].bg3:SetDrawLayer("BACKGROUND", 2)
+	--		_G[d].bg3:SetColorTexture(0,0,0,1)
+	--		_G[d].bg3:SetPoint("TOPLEFT", 2, -2)
+	--		_G[d].bg3:SetPoint("BOTTOMRIGHT", -2, 2)
+	--		_G[d].bg4 = _G[d]:CreateTexture(nil, "BACKGROUND")
+	--		_G[d].bg4:SetDrawLayer("BACKGROUND", 1)
+	--		_G[d].bg4:SetColorTexture(0, 0, 0)
+	--		_G[d].bg4:SetPoint("TOPLEFT", 1, -1)
+	--		_G[d].bg4:SetPoint("BOTTOMRIGHT", -1, 1)
+	--
+	--		if v == "Friend"then
+	--			_G[d.."Shield"]:SetPoint("TOPRIGHT", _G["AchievementFrameComparisonContainerButton"..f.."Friend"], "TOPRIGHT", -20, -3)
+	--		end
+	--
+	--		_G[d.."IconBling"]:Die()
+	--		_G[d.."IconOverlay"]:Die()
+	--		_G[d.."Icon"]:SetStyle("!_Frame", "Default")
+	--		_G[d.."Icon"]:SetHeight(_G[d.."Icon"]:GetHeight())
+	--		_G[d.."Icon"]:SetWidth(_G[d.."Icon"]:GetWidth())
+	--		_G[d.."Icon"]:ClearAllPoints()
+	--		_G[d.."Icon"]:SetPoint("LEFT", 6, 0)
+	--		_G[d.."IconTexture"]:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
+	--		_G[d.."IconTexture"]:InsetPoints()
+	--	end
+	--end
 
-			if v == "Friend"then
-				_G[d.."Shield"]:SetPoint("TOPRIGHT", _G["AchievementFrameComparisonContainerButton"..f.."Friend"], "TOPRIGHT", -20, -3)
-			end
+	--hooksecurefunc("AchievementFrameComparison_DisplayAchievement", function(i)
+	--	local w = i.player;
+	--	local x = i.friend
+	--	w.titleBar:Die()
+	--	x.titleBar:Die()
+	--	if not w.bg3 or not x.bg3 then
+	--		return
+	--	end
+	--	if w.accountWide then
+	--		w.bg3:SetTexture(ACHIEVEMENTUI_BLUEBORDER_R, ACHIEVEMENTUI_BLUEBORDER_G, ACHIEVEMENTUI_BLUEBORDER_B)
+	--	else
+	--		w.bg3:SetColorTexture(0,0,0,1)
+	--	end
+	--
+	--	if x.accountWide then
+	--		x.bg3:SetTexture(ACHIEVEMENTUI_BLUEBORDER_R, ACHIEVEMENTUI_BLUEBORDER_G, ACHIEVEMENTUI_BLUEBORDER_B)
+	--	else
+	--		x.bg3:SetColorTexture(0,0,0,1)
+	--	end
+	--end)
 
-			_G[d.."IconBling"]:Die()
-			_G[d.."IconOverlay"]:Die()
-			_G[d.."Icon"]:SetStyle("!_Frame", "Default")
-			_G[d.."Icon"]:SetHeight(_G[d.."Icon"]:GetHeight())
-			_G[d.."Icon"]:SetWidth(_G[d.."Icon"]:GetWidth())
-			_G[d.."Icon"]:ClearAllPoints()
-			_G[d.."Icon"]:SetPoint("LEFT", 6, 0)
-			_G[d.."IconTexture"]:SetTexCoord(unpack(_G.SVUI_ICON_COORDS))
-			_G[d.."IconTexture"]:InsetPoints()
-		end
-	end
+	--for f = 1, 20 do
+	--	local d = _G["AchievementFrameStatsContainerButton"..f]
+	--	_G["AchievementFrameStatsContainerButton"..f.."BG"]:SetColorTexture(1, 1, 1, 0.2)
+	--	_G["AchievementFrameStatsContainerButton"..f.."HeaderLeft"]:Die()
+	--	_G["AchievementFrameStatsContainerButton"..f.."HeaderRight"]:Die()
+	--	_G["AchievementFrameStatsContainerButton"..f.."HeaderMiddle"]:Die()
+	--	local d = "AchievementFrameComparisonStatsContainerButton"..f;
+	--	_G[d]:RemoveTextures()
+	--	_G[d]:SetStyle("Frame", "Default")
+	--	_G[d.."BG"]:SetColorTexture(1, 1, 1, 0.2)
+	--	_G[d.."HeaderLeft"]:Die()
+	--	_G[d.."HeaderRight"]:Die()
+	--	_G[d.."HeaderMiddle"]:Die()
+	--end
 
-	hooksecurefunc("AchievementFrameComparison_DisplayAchievement", function(i)
-		local w = i.player;
-		local x = i.friend
-		w.titleBar:Die()
-		x.titleBar:Die()
-		if not w.bg3 or not x.bg3 then
-			return
-		end
-		if w.accountWide then
-			w.bg3:SetTexture(ACHIEVEMENTUI_BLUEBORDER_R, ACHIEVEMENTUI_BLUEBORDER_G, ACHIEVEMENTUI_BLUEBORDER_B)
-		else
-			w.bg3:SetColorTexture(0,0,0,1)
-		end
-
-		if x.accountWide then
-			x.bg3:SetTexture(ACHIEVEMENTUI_BLUEBORDER_R, ACHIEVEMENTUI_BLUEBORDER_G, ACHIEVEMENTUI_BLUEBORDER_B)
-		else
-			x.bg3:SetColorTexture(0,0,0,1)
-		end
-	end)
-
-	for f = 1, 20 do
-		local d = _G["AchievementFrameStatsContainerButton"..f]
-		_G["AchievementFrameStatsContainerButton"..f.."BG"]:SetColorTexture(1, 1, 1, 0.2)
-		_G["AchievementFrameStatsContainerButton"..f.."HeaderLeft"]:Die()
-		_G["AchievementFrameStatsContainerButton"..f.."HeaderRight"]:Die()
-		_G["AchievementFrameStatsContainerButton"..f.."HeaderMiddle"]:Die()
-		local d = "AchievementFrameComparisonStatsContainerButton"..f;
-		_G[d]:RemoveTextures()
-		_G[d]:SetStyle("Frame", "Default")
-		_G[d.."BG"]:SetColorTexture(1, 1, 1, 0.2)
-		_G[d.."HeaderLeft"]:Die()
-		_G[d.."HeaderRight"]:Die()
-		_G[d.."HeaderMiddle"]:Die()
-	end
-
-	hooksecurefunc("AchievementButton_GetProgressBar", function(y)
-		local d = _G["AchievementFrameProgressBar"..y]
-		if d then
-			if not d.styled then
-				d:RemoveTextures()
-				d:SetStatusBarTexture(SV.media.statusbar.default)
-				d:SetStatusBarColor(4/255, 179/255, 30/255)
-				d:SetFrameLevel(d:GetFrameLevel()+3)
-				d:SetHeight(d:GetHeight()-2)
-				d.bg1 = d:CreateTexture(nil, "BACKGROUND")
-				d.bg1:SetDrawLayer("BACKGROUND", 4)
-				d.bg1:SetTexture(SV.media.background.transparent)
-				d.bg1:SetVertexColor(unpack(SV.media.color.default))
-				d.bg1:SetAllPoints()
-				d.bg3 = d:CreateTexture(nil, "BACKGROUND")
-				d.bg3:SetDrawLayer("BACKGROUND", 2)
-				d.bg3:SetColorTexture(0,0,0,1)
-				d.bg3:SetPoint("TOPLEFT", -1, 1)
-				d.bg3:SetPoint("BOTTOMRIGHT", 1, -1);
-				d.text:ClearAllPoints()
-				d.text:SetPoint("CENTER", d, "CENTER", 0, -1)
-				d.text:SetJustifyH("CENTER")
-				if y>1 then
-					d:ClearAllPoints()
-					d:SetPoint("TOP", _G["AchievementFrameProgressBar"..y-1], "BOTTOM", 0, -5)
-					hooksecurefunc(d, "SetPoint", function(k, p, q, r, s, t, z)
-						if not z then
-							k:ClearAllPoints()k:SetPoint("TOP", _G["AchievementFrameProgressBar"..y-1], "BOTTOM", 0, -5, true)
-						end
-					end)
-				end
-				d.styled = true
-			end
-		end
-	end)
+	--hooksecurefunc("AchievementButton_GetProgressBar", function(y)
+	--	local d = _G["AchievementFrameProgressBar"..y]
+	--	if d then
+	--		if not d.styled then
+	--			d:RemoveTextures()
+	--			d:SetStatusBarTexture(SV.media.statusbar.default)
+	--			d:SetStatusBarColor(4/255, 179/255, 30/255)
+	--			d:SetFrameLevel(d:GetFrameLevel()+3)
+	--			d:SetHeight(d:GetHeight()-2)
+	--			d.bg1 = d:CreateTexture(nil, "BACKGROUND")
+	--			d.bg1:SetDrawLayer("BACKGROUND", 4)
+	--			d.bg1:SetTexture(SV.media.background.transparent)
+	--			d.bg1:SetVertexColor(unpack(SV.media.color.default))
+	--			d.bg1:SetAllPoints()
+	--			d.bg3 = d:CreateTexture(nil, "BACKGROUND")
+	--			d.bg3:SetDrawLayer("BACKGROUND", 2)
+	--			d.bg3:SetColorTexture(0,0,0,1)
+	--			d.bg3:SetPoint("TOPLEFT", -1, 1)
+	--			d.bg3:SetPoint("BOTTOMRIGHT", 1, -1);
+	--			d.text:ClearAllPoints()
+	--			d.text:SetPoint("CENTER", d, "CENTER", 0, -1)
+	--			d.text:SetJustifyH("CENTER")
+	--			if y>1 then
+	--				d:ClearAllPoints()
+	--				d:SetPoint("TOP", _G["AchievementFrameProgressBar"..y-1], "BOTTOM", 0, -5)
+	--				hooksecurefunc(d, "SetPoint", function(k, p, q, r, s, t, z)
+	--					if not z then
+	--						k:ClearAllPoints()k:SetPoint("TOP", _G["AchievementFrameProgressBar"..y-1], "BOTTOM", 0, -5, true)
+	--					end
+	--				end)
+	--			end
+	--			d.styled = true
+	--		end
+	--	end
+	--end)
 
 	hooksecurefunc("AchievementObjectives_DisplayCriteria", function(A, B)
 		local C = GetAchievementNumCriteria(B)
