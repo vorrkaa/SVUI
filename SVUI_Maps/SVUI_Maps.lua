@@ -292,14 +292,12 @@ local function UpdateMiniMapCoords()
     if (IsInInstance()) then return end
 
 	local cmap = C_Map.GetBestMapForUnit("player")
-	local position
+	local position = {
+		x = 0,
+		y = 0
+	}
 	if cmap then
-		position = C_Map.GetPlayerMapPosition(cmap, "player")
-	else
-		position = {
-			x = 0,
-			y = 0
-		}
+		position = C_Map.GetPlayerMapPosition(cmap, "player") or position
 	end
     local playerX = position.x
     local playerY = position.y

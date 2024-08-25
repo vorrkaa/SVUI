@@ -85,7 +85,7 @@ local Hook_QuestNPCModel = function(self, _, _, _, _, _, x, y, _)
 	QuestModelScene:ClearAllPoints()
 	QuestModelScene:SetPoint("TOPLEFT", self, "TOPRIGHT", x + 18, y)
 
-	if not QuestNPCModelTextFrame.skinned then
+	if QuestNPCModelTextFrame and not QuestNPCModelTextFrame.skinned then
 		QuestNPCModelTextFrame:RemoveTextures()
 		QuestNPCModelTextFrame:SetStyle("Frame", "Default")
 		QuestNPCModelTextFrame.Panel:SetPoint("TOPLEFT", QuestModelScene.Panel, "BOTTOMLEFT", 0, -2)

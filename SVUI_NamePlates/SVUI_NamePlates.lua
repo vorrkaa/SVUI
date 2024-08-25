@@ -869,13 +869,14 @@ end
 
 function DriverFrame:OnNamePlateRemoved(namePlateUnitToken)
 	local nameplate = C_NamePlate.GetNamePlateForUnit(namePlateUnitToken, issecure())
-	if nameplate and nameplate.UnitFrame then
-		nameplate.UnitFrame:OnAdded(nil)
-	end
 
 	if self.previousPlate == nameplate then
 		self.previousPlate.UnitFrame:UpdateScale(true)
 		self.previousPlate = nil
+	end
+
+	if nameplate and nameplate.UnitFrame then
+		nameplate.UnitFrame:OnAdded(nil)
 	end
 
 end
