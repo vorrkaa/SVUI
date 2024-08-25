@@ -1010,7 +1010,7 @@ function MOD:Load()
 	if(SPELL_IDS) then
 		NewHook("SetItemRef", _hook_OnItemRef)
 		-- GameTooltip:HookScript("OnTooltipSetSpell", _hook_GameTooltip_OnTooltipSetSpell)
-		AddTooltipPostCall(Enum.TooltipDataType.Spell, TT._hook_GameTooltip_OnTooltipSetSpell)
+		TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Spell, _hook_GameTooltip_OnTooltipSetSpell)
 	end
 
 	GameTooltip:HookScript("OnTooltipCleared", _hook_OnTipCleared)
