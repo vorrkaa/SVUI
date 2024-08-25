@@ -97,6 +97,22 @@ LOCAL FUNCTIONS
 ]]--
 local goldFormat = "%s|TInterface\\MONEYFRAME\\UI-GoldIcon.blp:16:16|t"
 
+local function getSelectedTabID(self)
+	return self.selectedTabID
+end
+
+local function getTabData(self, tabID)
+	if not self.purchasedBankTabData then
+		return;
+	end
+
+	for index, tabData in ipairs(self.purchasedBankTabData) do
+		if tabData.ID == tabID then
+			return tabData;
+		end
+	end
+end
+
 function MOD:UpdateStockpile()
 	local journal = self.public[realmKey]["loot"][nameKey]
 	for id,amt in pairs(journal) do
@@ -188,7 +204,9 @@ local function SearchInBags(frame)
 		local container = frame.Bags[bagID];
 		if(container) then
 			for i = 1, GetContainerNumSlots(bagID) do
-				local _, _, _, _, _, _, _, isFiltered = GetContainerItemInfo(bagID, i)
+				local info = GetContainerItemInfo(bagID, i)
+				local isFiltered = info and info.isFiltered
+
 				local item = container[i]
 				if(item and item:IsShown()) then
 					if isFiltered then
@@ -681,7 +699,9 @@ local AccountFrame_UpdateLayout = function(self)
 	self.bankType = bankType
 	self.BagID = bagID
 	self.purchasedBankTabData = C_Bank.FetchPurchasedBankTabData(bankType)
-	if not self.selectedTabID then self.selectedTabID = self.purchasedBankTabData[1].ID end
+	if not self.selectedTabID then
+		self.selectedTabID = self.purchasedBankTabData[1].ID
+	end
 
 	local bag;
 	local bagName = ("%sBag%d"):format(containerName, bagID)
@@ -777,6 +797,47 @@ local AccountFrame_UpdateLayout = function(self)
 		end
 
 		bag:SlotUpdate(slotID);
+	end
+
+	local menu = self.BagMenu
+	local numTabs = C_Bank.FetchNumPurchasedBankTabs(Enum.BankType.Account)
+	local lastMenu
+	local menuWidth = ((buttonSize + buttonSpacing) * numTabs) + buttonSpacing;
+	local menuHeight = buttonSize + (buttonSpacing * 2);
+	menu:SetSize(menuWidth, menuHeight)
+
+	--C_Bank.FetchPurchasedBankTabData(Enum.BankType.Account)
+	--local tabData = C_Bank.FetchPurchasedBankTabIDs(Enum.BankType.Account)
+	local tabData = C_Bank.FetchPurchasedBankTabData(Enum.BankType.Account)
+	for i=1, numTabs do
+		local tabSlot = menu[i]
+
+		if not tabSlot then
+			local globalName, tabTemplate
+			globalName = "SVUI_AccountBankTab" ..i;
+			tabTemplate = "BankPanelTabTemplate"
+
+			tabSlot = CreateFrame("ItemButton", globalName, menu, tabTemplate)
+			tabSlot.parent = self
+			tabSlot.GetBankFrame = function() return self end
+
+			tabSlot:SetScript("OnClick", function(tab, button)
+				self.selectedTabID = tab.tabData.ID
+				AccountBankPanel.TabSettingsMenu:TriggerEvent(BankPanelTabSettingsMenuMixin.Event.OpenTabSettingsRequested, tab.tabData.ID)
+			end)
+
+			menu[i] = tabSlot
+		end
+
+		tabSlot:Init(tabData[i])
+		tabSlot:SetSize(buttonSize, buttonSize)
+		tabSlot:ClearAllPoints()
+
+		if i == 1 then
+			tabSlot:SetPoint("BOTTOMLEFT", menu, "BOTTOMLEFT", buttonSpacing, buttonSpacing)
+		else
+			tabSlot:SetPoint("LEFT", menu[i-1], "RIGHT", buttonSpacing, 0)
+		end
 	end
 
 	self:SetSize(containerWidth, containerHeight);
@@ -1390,7 +1451,8 @@ do
 		frame.editBox:SetScript("OnEscapePressed", InventorySearch_OnReset)
 		frame.editBox:SetScript("OnEnterPressed", InventorySearch_OnReset)
 		frame.editBox:SetScript("OnEditFocusLost", frame.editBox.Hide)
-		frame.editBox:SetScript("OnEditFocusGained", frame.editBox.HighlightText)
+		--frame.editBox:SetScript("OnEditFocusGained", frame.editBox.HighlightText)
+		frame.editBox:SetScript("OnEditFocusGained", EditBox_HighlightText)
 		frame.editBox:SetScript("OnTextChanged", InventorySearch_OnTextChanged)
 		frame.editBox:SetScript("OnChar", InventorySearch_OnChar)
 		frame.editBox.SearchReset = InventorySearch_OnReset
@@ -1559,6 +1621,8 @@ do
 		frame.UpdateLayout = AccountFrame_UpdateLayout
 		frame.RefreshBags = ContainerFrame_UpdateBags
 		frame.RefreshCooldowns = ContainerFrame_UpdateCooldowns
+		frame.GetTabData = getTabData
+		frame.GetSelectedTabID = getSelectedTabID
 
 		frame:RegisterEvent("ITEM_LOCK_CHANGED")
 		frame:RegisterEvent("ITEM_UNLOCKED")
@@ -1658,7 +1722,7 @@ do
 		frame.bagsButton:SetPoint("RIGHT", frame.sortButton, "LEFT", -10, 0)
 		frame.bagsButton:SetSize(25, 25)
 		StyleBagToolButton(frame.bagsButton, MOD.media.bagIcon)
-		frame.bagsButton.ttText = L["Toggle Bags"]
+		frame.bagsButton.ttText = L["Toggle Tabs"]
 		frame.bagsButton:SetScript("OnEnter", Tooltip_Show)
 		frame.bagsButton:SetScript("OnLeave", Tooltip_Hide)
 		local BagBtn_OnClick = function()
@@ -1666,12 +1730,13 @@ do
 			if(BagFilters and BagFilters:IsShown()) then
 				ToggleFrame(BagFilters)
 			end
-			local numSlots, _ = GetNumBankSlots()
-			if numSlots  >= 1 then
+			--FetchPurchasedBankTabIDs
+			local numSlots = C_Bank.FetchNumPurchasedBankTabs(Enum.BankType.Account)
+			--if numSlots > 1 then
 				ToggleFrame(frame.BagMenu)
-			else
-				SV:StaticPopup_Show("NO_BANK_BAGS")
-			end
+			--else
+				SV:StaticPopup_Show("NO_ACCOUNTBANK_BAGS")
+			--end
 		end
 		frame.bagsButton:SetScript("OnClick", BagBtn_OnClick)
 
@@ -1698,6 +1763,10 @@ do
 
 		frame:SetScript("OnHide", CloseBankFrame)
 		self.AccountFrame = frame
+
+		AccountBankPanel.TabSettingsMenu:SetParent(frame)
+		AccountBankPanel.TabSettingsMenu:ClearAllPoints()
+		AccountBankPanel.TabSettingsMenu:SetPoint("TOPLEFT", frame, "TOPRIGHT", 10, 0)
 
 		SV:UpdateSharedMedia()
 	end
@@ -2404,6 +2473,13 @@ function MOD:Load()
 
 	SV.SystemAlert["NO_BANK_BAGS"] = {
 		text = L["You must purchase a bank slot first!"],
+		button1 = ACCEPT,
+		timeout = 0,
+		whileDead = 1
+	};
+
+	SV.SystemAlert["NO_ACCOUNTBANK_BAGS"] = {
+		text = L["You must purchase an account bank slot first!"],
 		button1 = ACCEPT,
 		timeout = 0,
 		whileDead = 1
