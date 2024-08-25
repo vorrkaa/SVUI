@@ -348,11 +348,13 @@ end
 local function GetNPCColor(unit)
 	if not IsInInstance() then return end
 
-	local npcColorMapping = MOD.public.npcColorMapping
-	local unitName = UnitName(unit)
-	local dungeonName = GetInstanceInfo()
+	local npcColorMapping = MOD.public.Dungeons.NPCMapping
 
-	local color = (npcColorMapping[dungeonName] and npcColorMapping[dungeonName][unitName] and npcColorMapping[dungeonName][unitName].enable and npcColorMapping[dungeonName][unitName].color) or nil
+	local guid = UnitGUID(unit)
+	local npcId = guid and select(6, strsplit("-", guid)) or nil
+	local instanceID = select(8, GetInstanceInfo())
+
+	local color = (npcColorMapping[instanceID] and npcColorMapping[instanceID][npcId] and npcColorMapping[instanceID][npcId].enable and npcColorMapping[instanceID][npcId].color) or nil
 	if color then
 		return MOD:GetColor(color)
 	else
@@ -365,11 +367,13 @@ local function GetNPCTexture(unit)
 		return config.StatusbarTexture
 	end
 
-	local npcColorMapping = MOD.public.npcColorMapping
-	local unitName = UnitName(unit)
-	local dungeonName = GetInstanceInfo()
+	local npcColorMapping = MOD.public.Dungeons.NPCMapping
 
-	local texture = (npcColorMapping[dungeonName] and npcColorMapping[dungeonName][unitName] and npcColorMapping[dungeonName][unitName].enable and npcColorMapping[dungeonName][unitName].texture) or nil
+	local guid = UnitGUID(unit)
+	local npcId = guid and select(6, strsplit("-", guid)) or nil
+	local instanceID = select(8, GetInstanceInfo())
+
+	local texture = (npcColorMapping[instanceID] and npcColorMapping[instanceID][npcId] and npcColorMapping[instanceID][npcId].enable and npcColorMapping[instanceID][npcId].texture) or nil
 	if texture then
 		return LSM:Fetch("statusbar", texture)
 	else
@@ -677,7 +681,8 @@ function MOD:InitialSetCVar()
 
 end
 
-function MOD:Load() 
+function MOD:Load()
+	self:LoadDungeonData()
 	self:UpdateLocals();
 	DriverFrame:SetScript('OnEvent', DriverFrame.OnEvent)
 	DriverFrame:RegisterEvent'PLAYER_ENTERING_WORLD'
@@ -1521,8 +1526,14 @@ function UnitFrameMixin:UpdateInVehicle()
 end
 
 function UnitFrameMixin:UpdateRaidTarget()
+	if not self.unit and not self.displayedUnit then
+		self.optionTable.healthBarColorOverride = nil
+		icon:Hide();
+		return
+	end
+
 	local icon = self.raidTargetIcon;
-	local index = GetRaidTargetIndex(self.unit)
+	local index = GetRaidTargetIndex(self.unit or self.displayedUnit)
 	if ( index ) then
 		SetRaidTargetIconTexture(icon, index);
 		icon:Show();
