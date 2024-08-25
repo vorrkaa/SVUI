@@ -13,4 +13,5 @@
     <Script file="class_filters\shaman.lua"/>
     <Script file="class_filters\warlock.lua"/>
     <Script file="class_filters\warrior.lua"/>
+    <Script file="class_filters\evoker.lua"/>
 </Ui>
