@@ -1029,8 +1029,6 @@ if (myclass == "ROGUE") then
 		comboBar:SetFrameStrata("HIGH")
 		comboBar:SetFrameLevel(50) -- Make sure it's always on top, even over castBar...
 
-		DevTool:AddData(comboBar, "ClassNameplateBarRogueFrame")
-
 		for i = 1, #comboBar.classResourceButtonTable do
 			comboBar.classResourceButtonTable[i]:DisableDrawLayer("BACKGROUND")
 			comboBar.classResourceButtonTable[i].IconCharged:SetTexture(MOD.media.comboIcon)
