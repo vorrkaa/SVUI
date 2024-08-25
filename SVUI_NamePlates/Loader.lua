@@ -133,112 +133,6 @@ SV.defaults[Schema] = {
     --},
 };
 
-MOD.public = {
-    ["dungeonCache"] = {
-        ["Grim Batol"] = {
-            ["InstanceID"] = 670,
-            ["NPC"] = {
-                ["Drahga Shadowburner"] = "40319",
-                ["Twilight Destroyer"] = "224609",
-                ["Forgemaster Throngus"] = "40177",
-                ["Mutated Hatchling"] = "224853",
-                ["Twilight Flamerender"] = "224240",
-                ["Twilight Enforcer"] = "224276",
-                ["Trogg Dweller"] = "39450",
-                ["Twilight Beguiler"] = "40167",
-                ["Twilight Drake"] = "39390",
-                ["Faceless Corruptor"] = "39392",
-                ["Twilight Brute"] = "224152",
-                ["Twilight Warlock"] = "224271",
-                ["General Umbriss"] = "39625",
-                ["Molten Giant"] = "40166",
-                ["Twilight Earthcaller"] = "224219",
-                ["Valiona"] = "40320",
-                ["Erudax"] = "40484",
-                ["Twilight Overseer"] = "224221",
-                ["Twilight Lavabender"] = "224249",
-            },
-        },
-        ["Siege of Boralus"] = {
-            ["InstanceID"] = 1822,
-            ["NPC"] = {
-                ["Kul Tiran Footman"] = "141495",
-                ["Kul Tiran Wavetender"] = "141284",
-                ["Sergeant Bainbridge"] = "128649",
-                ["Kul Tiran Marksman"] = "141285",
-                ["Ashvane Commander"] = "128969",
-                ["Ashvane Cannoneer"] = "138465",
-                ["Blacktar Bomber"] = "129372",
-                ["Irontide Curseblade"] = "135258",
-                ["Chopper Redhook"] = "144160",
-                ["Bilge Rat Cutthroat"] = "137511",
-                ["Ashvane Destroyer"] = "137517",
-                ["Ashvane Spotter"] = "138255",
-                ["Ashvane Deckhand"] = "138464",
-                ["Dread Captain Lockwood"] = "129208",
-                ["Bilge Rat Demolisher"] = "135245",
-                ["Hadal Darkfathom"] = "128651",
-                ["Demolishing Terror"] = "137614",
-                ["Irontide Powdershot"] = "137521",
-                ["Scrimshaw Gutter"] = "141566",
-                ["Ashvane Sniper"] = "141938",
-                ["Irontide Raider"] = "129369",
-                ["Gripping Terror"] = "137405",
-                ["Ashvane Invader"] = "137516",
-                ["Irontide Waveshaper"] = "129370",
-                ["Bilge Rat Buccaneer"] = "129366",
-                ["Kul Tiran Halberd"] = "141283",
-                ["Bilge Rat Tempest"] = "129367",
-                ["Kul Tiran Vanguard"] = "138019",
-                ["Unknown"] = "132481",
-                ["Bilge Rat Pillager"] = "135241",
-                ["Viq'Goth"] = "128652",
-            },
-        },
-        ["The Necrotic Wake"] = {
-            ["InstanceID"] = 2286,
-            ["NPC"] = {
-                ["Zolramus Bonecarver"] = "163619",
-                ["Rotspew"] = "163620",
-                ["Flesh Crafter"] = "165872",
-                ["Skeletal Monstrosity"] = "165197",
-                ["Blight Bag"] = "165138",
-                ["Stitchflesh's Creation"] = "164578",
-                ["Stitching Assistant"] = "173044",
-                ["Corpse Harvester"] = "166302",
-                ["Zolramus Gatekeeper"] = "165137",
-                ["Zolramus Bonemender"] = "165222",
-                ["Patchwerk Soldier"] = "162729",
-                ["Zolramus Sorcerer"] = "163128",
-                ["Amarth"] = "163157",
-                ["Zolramus Necromancer"] = "163618",
-                ["Goregrind"] = "163621",
-                ["Brittlebone Mage"] = "163126",
-                ["Blightbone"] = "162691",
-                ["Brittlebone Crossbowman"] = "166079",
-                ["Kyrian Stitchwerk"] = "172981",
-                ["Brittlebone Warrior"] = "163122",
-                ["Goregrind Bits"] = "163622",
-                ["Shuffling Corpse"] = "171500",
-                ["Rotspew Leftovers"] = "163623",
-                ["Separation Assistant"] = "167731",
-                ["Spare Parts"] = "166264",
-                ["Nar'zudah"] = "165824",
-                ["Loyal Creation"] = "165911",
-                ["Nalthor the Rimebinder"] = "162693",
-                ["Corpse Collector"] = "173016",
-                ["Surgeon Stitchflesh"] = "162689",
-                ["Stitched Vanguard"] = "163121",
-                ["Skeletal Marauder"] = "165919",
-            },
-        },
-    },
-    ["npcColorMapping"] = {},
-}
-
---["dungeonCache"] = {}, --We want a table only for npcs scan in dungeon
---["npcColors"] = {}, --We want a table to store the mapping between npc and color
-
 --[name] = color
 local colors = {
     ["HUNTER"] = CreateColor(0.454, 0.698, 0),
@@ -267,9 +161,6 @@ local colors = {
     --["MONK2"] = CreateColor(0.33, 0.54, 0.52),
     ["DEMONHUNTER2"] = CreateColor(0.64, 0.19, 0.79),
     ["EVOKER2"] = CreateColor(0.20, 0.58, 0.5),
-
-}
-local NPC = {
 
 }
 
@@ -383,15 +274,15 @@ local function UpdateFilterGroupOptions()
         }
     }
 end
-
 local function UpdateNPCOptions()
 
     if not SV.Options.args[Schema] then
         print ("|cFFFF0000 Trying to Update NPC but Nameplates is not loaded yet|r")
         return
     end
-    local dungeonCache = MOD.public.dungeonCache
-    local npcColorMapping = MOD.public.npcColorMapping
+
+    local dungeonCache = MOD.public.Dungeons.Cache
+    local npcColorMapping = MOD.public.Dungeons.NPCMapping
 
     SV.Options.args[Schema].args.commonGroup.args.NPCMapping = {
         type = "group",
@@ -421,70 +312,72 @@ local function UpdateNPCOptions()
         if not npcColorMapping[dungeon] then
             npcColorMapping[dungeon] = {}
         end
-        array[dungeon] = {
-            type = "group",
-            name = dungeon,
-            order = i,
-            get = function(k)
-                return npcColorMapping[dungeon][k[#k]]
-            end,
-            set = function(k, v)
-                npcColorMapping[dungeon][k[#k]] = v
-                MOD:UpdateAllPlates()
-            end,
-            args = {}
-        }
-
-        j = 1
-        for npcName, npcID in pairs(cache.NPC) do
-            if not npcColorMapping[dungeon][npcName] then
-                npcColorMapping[dungeon][npcName] = {}
-            end
-            array[dungeon].args[npcName] = {
-                name = npcName,
+        if type(cache) == "table" then
+            array[cache.Name] = {
                 type = "group",
-                order = order,
-                --guiInline  = true,
+                name = cache.Name,
+                order = i,
                 get = function(k)
-                    return npcColorMapping[dungeon][npcName][k[#k]]
+                    return npcColorMapping[dungeon][k[#k]]
                 end,
                 set = function(k, v)
-                    npcColorMapping[dungeon][npcName][k[#k]] = v
+                    npcColorMapping[dungeon][k[#k]] = v
                     MOD:UpdateAllPlates()
                 end,
-                args = {
-                    enable = {
-                        type = "toggle",
-                        order = 1,
-                        name = L["Enable"],
-                        desc = L["Override Nameplate color"]
-                    },
-                    id = {
-                        type = "description",
-                        name = L["NPC ID: "]..npcID,
-                        fontSize = "medium",
-                        width = "normal",
-                        order = 2,
-                    },
-                    color = {
-                        type = "select",
-                        name = L["Color"],
-                        order = 4,
-                        values = MOD:GetColoredSelector(true)
-                    },
-                    texture = {
-                        type = "select",
-                        dialogControl = "LSM30_Statusbar",
-                        order = 6,
-                        name = L["StatusBar Texture"],
-                        desc = L["Main statusbar texture."],
-                        values = AceVillainWidgets.statusbar
+                args = {}
+            }
+
+            j = 1
+            for npcID, npcName in pairs(cache.NPC) do
+                if not npcColorMapping[dungeon][npcID] then
+                    npcColorMapping[dungeon][npcID] = {}
+                end
+                array[cache.Name].args[npcName] = {
+                    name = npcName,
+                    type = "group",
+                    order = order,
+                    --guiInline  = true,
+                    get = function(k)
+                        return npcColorMapping[dungeon][npcID][k[#k]]
+                    end,
+                    set = function(k, v)
+                        npcColorMapping[dungeon][npcID][k[#k]] = v
+                        MOD:UpdateAllPlates()
+                    end,
+                    args = {
+                        enable = {
+                            type = "toggle",
+                            order = 1,
+                            name = L["Enable"],
+                            desc = L["Override Nameplate color"]
+                        },
+                        id = {
+                            type = "description",
+                            name = L["NPC ID: "]..npcID,
+                            fontSize = "medium",
+                            width = "normal",
+                            order = 2,
+                        },
+                        color = {
+                            type = "select",
+                            name = L["Color"],
+                            order = 4,
+                            values = MOD:GetColoredSelector(true)
+                        },
+                        texture = {
+                            type = "select",
+                            dialogControl = "LSM30_Statusbar",
+                            order = 6,
+                            name = L["StatusBar Texture"],
+                            desc = L["Main statusbar texture."],
+                            values = AceVillainWidgets.statusbar
+                        }
                     }
                 }
-            }
-            j = j + 1
+                j = j + 1
+            end
+            i = i + 1
         end
-        i = i + 1
     end
 
 end
