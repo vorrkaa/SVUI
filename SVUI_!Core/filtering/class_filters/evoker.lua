@@ -135,6 +135,20 @@ SV.defaults.Filters["BuffWatch"] = {
         ['xOffset'] = 0,
         ['yOffset'] = 0
     },
+    ["409896"] = { -- Spiritbloom hot
+        ["enable"] = true,
+        ["id"] = 409896,
+        ["point"] = "TOPRIGHT",
+        ["color"] = {["r"] = 0.7, ["g"] = 0.4, ["b"] = 0.4},
+        ["anyUnit"] = true,
+        ["onlyShowMissing"] = false,
+        ['style'] = 'coloredIcon',
+        ['displayText'] = false,
+        ['textColor'] = {["r"] = 1, ["g"] = 1, ["b"] = 1},
+        ['textThreshold'] = -1,
+        ['xOffset'] = 0,
+        ['yOffset'] = 0
+    },
     ["357170"] = { -- Time Dilation
         ["enable"] = true,
         ["id"] = 357170,
@@ -149,5 +163,46 @@ SV.defaults.Filters["BuffWatch"] = {
         ['xOffset'] = 0,
         ['yOffset'] = 0
     },
-
+    ["360827"] = { -- Blistering Scales
+        ["enable"] = true,
+        ["id"] = 360827,
+        ["point"] = "BOTTOMLEFT",
+        ["color"] = {["r"] = 0.7, ["g"] = 0.4, ["b"] = 0.4},
+        ["anyUnit"] = true,
+        ["onlyShowMissing"] = false,
+        ['style'] = 'coloredIcon',
+        ['displayText'] = false,
+        ['textColor'] = {["r"] = 1, ["g"] = 1, ["b"] = 1},
+        ['textThreshold'] = 5,
+        ['xOffset'] = 0,
+        ['yOffset'] = 0
+    },
+    ["395296"] = { -- Ebon Might
+        ["enable"] = true,
+        ["id"] = 395296,
+        ["point"] = "BOTTOMRIGHT",
+        ["color"] = {["r"] = 0.4, ["g"] = 0.7, ["b"] = 0.4},
+        ["anyUnit"] = true,
+        ["onlyShowMissing"] = false,
+        ['style'] = 'coloredIcon',
+        ['displayText'] = false,
+        ['textColor'] = {["r"] = 1, ["g"] = 1, ["b"] = 1},
+        ['textThreshold'] = -1,
+        ['xOffset'] = 0,
+        ['yOffset'] = 0
+    },
+    ["410089"] = { -- Prescience
+        ["enable"] = true,
+        ["id"] = 410089,
+        ["point"] = "RIGHT",
+        ["color"] = {["r"] = 0.4, ["g"] = 0.4, ["b"] = 0.7},
+        ["anyUnit"] = true,
+        ["onlyShowMissing"] = false,
+        ['style'] = 'coloredIcon',
+        ['displayText'] = false,
+        ['textColor'] = {["r"] = 1, ["g"] = 1, ["b"] = 1},
+        ['textThreshold'] = -1,
+        ['xOffset'] = 0,
+        ['yOffset'] = 0
+    },
 };
