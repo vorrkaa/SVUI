@@ -559,13 +559,19 @@ end
 HEALTH
 ##########################################################
 ]]--
-local function CreateAbsorbBar(parent, unit)
+local function CreateAbsorbBar(parent, unit, height)
 	local absorbBar = CreateFrame("StatusBar", nil, parent)
 	absorbBar:SetFrameStrata("LOW")
 	absorbBar:SetFrameLevel(3)
 	absorbBar:SetStatusBarTexture(SV.media.statusbar.default);
 	absorbBar:SetMinMaxValues(0, 100)
-	absorbBar:SetAllPoints(parent)
+	if not height or height == 0 then
+		absorbBar:SetAllPoints(parent)
+	else
+		absorbBar:SetPoint("TOPLEFT", parent)
+		absorbBar:SetPoint("TOPRIGHT", parent)
+		absorbBar:SetHeight(height)
+	end
 	absorbBar:SetScript("OnUpdate", function(self)
 		if unit then
 			local hpMax = UnitHealthMax(unit)
@@ -575,7 +581,8 @@ local function CreateAbsorbBar(parent, unit)
 
 			if effectiveHP > hpMax then effectiveHP = hpMax end
 			self:SetMinMaxValues(0, hpMax)
-			self:SetValue(effectiveHP)
+			self:SetValue(absorb)
+			--DevTool:AddData({currentHP, hpMax, absorb, effectiveHP}, "Absorb OnUpdate")
 		end
 	end)
 	return absorbBar
@@ -651,7 +658,7 @@ local RefreshHealthBar = function(self, overlay)
 			if self.Health.absorbBar then
 				absorbBar = self.Health.absorbBar
 			else
-				absorbBar = CreateAbsorbBar(self.Health, self.unit)
+				absorbBar = CreateAbsorbBar(self.Health, self.unit, db.health.absorbsHeight)
 			end
 
 		self.Health.bg:SetParent(absorbBar)
@@ -678,7 +685,7 @@ function MOD:CreateHealthBar(frame, hasbg)
 	healthBar:SetStatusBarTexture(SV.media.statusbar.default);
 
 	if enableAbsorbsBar then
-		local absorbBar = CreateAbsorbBar(healthBar, frame.unit)
+		local absorbBar = CreateAbsorbBar(healthBar, frame.unit, db.health.absorbsHeight)
 		healthBar.absorbBar = absorbBar
 	end
 
