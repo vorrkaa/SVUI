@@ -657,9 +657,21 @@ function SVUIOptions:SetHealthConfigGroup(partyRaid, updateFunction, unitName, c
 				name = "Extras",
 				args = {
 					absorbsBar = {
+						order = 1,
 						type = "toggle",
 						name = "Absorbs Bar",
 						desc = "Show an absorb bar anchored to health bar. \n It allows to see the current health effective (current health + current absorbs).",
+					},
+					absorbsHeight = {
+						order = 2,
+						type = "range",
+						name = L["Absorbs Height"],
+						desc = "Change the height of the absorb Bar if you don't want it takes all the healthBar. Let to 0 to reset.",
+						min = 0,
+						max = 15,
+						step = 1,
+						width = "full",
+						--set = function(a,b) MOD:ChangeDBVar(b,a[#a]) end
 					}
 				}
 			}
