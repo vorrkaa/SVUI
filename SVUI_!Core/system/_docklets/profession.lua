@@ -120,7 +120,7 @@ local function CreateMacroToolButton(proName, proID, itemID)
 
 	if proID == 186 then proName = GetSpellInfo(2656).name end
 
-	--button:RegisterForClicks("AnyDown")
+	button:RegisterForClicks("AnyDown")
 	button:SetAttribute("type1", "macro")
 	button:SetAttribute("macrotext1", "/cast [nomod]" .. proName)
 
