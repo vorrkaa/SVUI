@@ -347,6 +347,7 @@ local function LoadMiscTools()
 		if(HEARTH_HEADER and type(HEARTH_HEADER) == "string") then
 			local hearth = SV.Dock:SetDockButton("BottomLeft", HEARTH_HEADER, "SVUI_Hearth", SV.media.dock.hearthIcon, Hearth_OnEnter, "SecureActionButtonTemplate")
 			hearth.Icon:SetTexCoord(0,0.5,0,1)
+			hearth:RegisterForClicks("AnyDown")
 			hearth:SetAttribute("type1", "macro")
 			hearth:SetAttribute("type2", "macro")
 
