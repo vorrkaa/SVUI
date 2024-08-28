@@ -1526,21 +1526,6 @@ MOD.TopCenter = _G["SVUI_DockTopCenter"];
 MOD.BottomCenter = _G["SVUI_DockBottomCenter"];
 local dockAlertCombatActive = false
 
-local DockAlert_OnEvent = function(self, event)
-    if(event == 'PLAYER_REGEN_ENABLED') then
-    	if dockAlertCombatActive then
-    		DockAlert_Deactivate(self)
-    		dockAlertCombatActive = false
-    	end
-        self:SetHeight(self.activeHeight)
-		if self.child then
-			self.child:SetAllSecurePoints(self)
-			self.child = nil
-		end
-        self:UnregisterEvent(event)
-    end
-end
-
 local DockAlert_Activate = function(self, child, newHeight)
 
 	--if not InCombatLockdown() then
@@ -1570,14 +1555,29 @@ local DockAlert_Activate = function(self, child, newHeight)
 end
 
 local DockAlert_Deactivate = function(self)
-	if InCombatLockdown() then 
+	if InCombatLockdown() then
 		-- Make sure we deactivate later
-		dockAlertCombatActive = true 
-		return 
+		dockAlertCombatActive = true
+		return
 	end
 
 	self:SetHeight(1)
 	self:SetAlpha(0)
+end
+
+local DockAlert_OnEvent = function(self, event)
+    if(event == 'PLAYER_REGEN_ENABLED') then
+    	if dockAlertCombatActive then
+    		DockAlert_Deactivate(self)
+    		dockAlertCombatActive = false
+    	end
+        self:SetHeight(self.activeHeight)
+		if self.child then
+			self.child:SetAllSecurePoints(self)
+			self.child = nil
+		end
+        self:UnregisterEvent(event)
+    end
 end
 
 local DockProxy_ResetAll = function(self, ...)

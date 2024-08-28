@@ -118,9 +118,15 @@ local function CreateMacroToolButton(proName, proID, itemID)
 
 	button.Icon:SetTexCoord(data[1], data[2], data[3], data[4])
 
-	if proID == 186 then proName = GetSpellInfo(2656).name end
+	if proID == 186 then -- mining
+		proName = GetSpellInfo(2656).name
+	elseif proID == 182 then -- herbalism
+		proName = GetSpellInfo(193290).name
+	elseif proID == 773 then -- inscription
+		proName = GetSpellInfo(45357).name
+	end
 
-	--button:RegisterForClicks("AnyDown")
+	button:RegisterForClicks("AnyDown")
 	button:SetAttribute("type1", "macro")
 	button:SetAttribute("macrotext1", "/cast [nomod]" .. proName)
 
